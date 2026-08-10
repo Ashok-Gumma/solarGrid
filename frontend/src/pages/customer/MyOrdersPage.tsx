@@ -32,9 +32,10 @@ export function MyOrdersPage() {
     setLoading(true);
     const res = await fetchApi<any>('/orders');
     if (res.success) {
+      const rawRes = res as any;
       const orderList = Array.isArray(res.data)
         ? res.data
-        : res.orders || (res.data && res.data.orders) || [];
+        : rawRes.orders || (res.data && (res.data as any).orders) || [];
       setOrders(orderList);
     }
     setLoading(false);
@@ -154,7 +155,8 @@ export function MyOrdersPage() {
                     </button>
                   )}
                   {isDelivered && (() => {
-                    const deliveryTime = o.deliveredAt ? new Date(o.deliveredAt).getTime() : new Date(o.updatedAt).getTime();
+                    const dateStr = o.deliveredAt || o.updatedAt || o.createdAt;
+                    const deliveryTime = dateStr ? new Date(dateStr).getTime() : new Date().getTime();
                     const diffInDays = (new Date().getTime() - deliveryTime) / (1000 * 60 * 60 * 24);
                     const canReturn = diffInDays <= 15;
 
