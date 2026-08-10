@@ -17,8 +17,8 @@ if (db.get('users').length === 0) {
   seedDatabase().catch((err) => console.error('[SEED_ERROR]', err));
 }
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
+// Root & API Health check endpoints
+app.get(['/', '/health', '/api/health'], (req, res) => {
   res.json({
     status: 'OK',
     service: 'SolarGrid ERP/CRM Backend Engine',
@@ -26,8 +26,9 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// API Routes
+// API Routes (Mounted under both /api and / for universal compatibility)
 app.use('/api', router);
+app.use('/', router);
 
 // Centralized Error Handling Middleware
 app.use(errorHandler);
