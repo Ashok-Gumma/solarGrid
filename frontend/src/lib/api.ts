@@ -1,4 +1,5 @@
-const API_BASE = (import.meta.env.VITE_API_URL as string) || '/api';
+const rawApiBase = (import.meta.env.VITE_API_URL as string) || '/api';
+const API_BASE = rawApiBase.replace(/\/+$/, '');
 
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<{ success: boolean; data?: T; message?: string; details?: any; pagination?: any }> {
   const token = localStorage.getItem('solargrid_token');
@@ -11,8 +12,10 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
     headers['Authorization'] = `Bearer ${token}`;
   }
 
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
   try {
-    const res = await fetch(`${API_BASE}${endpoint}`, {
+    const res = await fetch(`${API_BASE}${cleanEndpoint}`, {
       ...options,
       headers,
     });
