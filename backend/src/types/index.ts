@@ -254,6 +254,7 @@ export interface Notification {
   targetRole?: Role | 'ALL';
   title: string;
   message: string;
+  type?: 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
   referenceType?: string;
   referenceId?: string;
   isRead: boolean;

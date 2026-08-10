@@ -290,10 +290,85 @@ export class OrderService {
     order.returnNotes = notes || '';
     order.updatedAt = new Date().toISOString();
 
+    // Create notification for Warehouse staff
+    const notifications = db.get('notifications');
+    notifications.unshift({
+      id: `NOTIF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      title: `Return Requested: ${order.orderNumber}`,
+      message: `Customer requested return for order ${order.orderNumber}. Reason: ${reason}`,
+      type: 'WARNING',
+      targetRole: 'WAREHOUSE',
+      createdAt: new Date().toISOString(),
+      isRead: false,
+    });
+
     logAudit(userId, userName, 'RETURN_ORDER', 'Order', orderId, { orderNumber: order.orderNumber, reason, notes });
     db.saveData();
 
     const orderItems = db.get('orderItems').filter((i) => i.orderId === order.id);
     return { ...order, items: orderItems };
+  }
+
+  static async approveReturn(orderId: string, warehouseUserId?: string, warehouseUserName?: string) {
+    return await db.transaction(async () => {
+      const orders = db.get('orders');
+      const order = orders.find((o) => o.id === orderId);
+      if (!order) {
+        throw new AppError('Order not found.', 404);
+      }
+
+      if (order.status !== 'RETURN_REQUESTED') {
+        throw new AppError('Only orders with a pending return request can be marked as returned.', 400);
+      }
+
+      order.status = 'RETURNED';
+      order.updatedAt = new Date().toISOString();
+
+      const orderItems = db.get('orderItems').filter((i) => i.orderId === order.id);
+      const products = db.get('products');
+      const stockMovements = db.get('stockMovements');
+
+      // Restock products into inventory
+      for (const item of orderItems) {
+        const product = products.find((p) => p.id === item.productId);
+        if (product) {
+          product.currentStock += item.quantity;
+          product.updatedAt = new Date().toISOString();
+
+          stockMovements.unshift({
+            id: `MOV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            productId: product.id,
+            productName: product.name,
+            productSku: product.sku,
+            quantity: item.quantity,
+            movementType: 'IN',
+            reason: `Customer Return Restock for ${order.orderNumber}`,
+            referenceType: 'CUSTOMER_RETURN',
+            referenceId: order.id,
+            createdBy: warehouseUserId || '',
+            createdByName: warehouseUserName || 'Warehouse Staff',
+            createdAt: new Date().toISOString(),
+          });
+        }
+      }
+
+      // Notify Customer: Product Received & Successfully Returned
+      const notifications = db.get('notifications');
+      notifications.unshift({
+        id: `NOTIF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        userId: order.customerId,
+        title: `Product Received & Returned: ${order.orderNumber}`,
+        message: `Warehouse has received your returned items for order ${order.orderNumber}. Your return has been successfully processed!`,
+        type: 'SUCCESS',
+        targetRole: 'CUSTOMER',
+        createdAt: new Date().toISOString(),
+        isRead: false,
+      });
+
+      logAudit(warehouseUserId, warehouseUserName, 'APPROVE_RETURN', 'Order', orderId, { orderNumber: order.orderNumber });
+      db.saveData();
+
+      return { ...order, items: orderItems };
+    });
   }
 }

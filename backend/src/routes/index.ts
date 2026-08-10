@@ -66,6 +66,7 @@ router.post('/orders', optionalAuthenticate, OrderController.create);
 router.post('/orders/:id/cancel', optionalAuthenticate, OrderController.cancel);
 router.post('/orders/:id/deliver', optionalAuthenticate, OrderController.markDelivered);
 router.post('/orders/:id/return', optionalAuthenticate, OrderController.requestReturn);
+router.post('/orders/:id/approve-return', optionalAuthenticate, OrderController.approveReturn);
 
 // --- INSTALLATIONS ---
 router.get('/installations', optionalAuthenticate, InstallationController.getAll);

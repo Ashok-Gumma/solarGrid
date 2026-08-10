@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Package, CheckCircle2, XCircle, FileText, Search } from 'lucide-react';
+import { Package, CheckCircle2, XCircle, FileText, Search, RotateCcw } from 'lucide-react';
 import { fetchApi } from '../../lib/api';
 import { Order } from '../../types';
 import { TaxInvoiceModal } from '../../components/invoice/TaxInvoiceModal';
@@ -18,9 +18,10 @@ export function AdminOrdersPage() {
     setLoading(true);
     const res = await fetchApi<any>('/orders');
     if (res.success) {
+      const rawRes = res as any;
       const orderList = Array.isArray(res.data)
         ? res.data
-        : res.orders || (res.data && res.data.orders) || [];
+        : rawRes.orders || (res.data && (res.data as any).orders) || [];
       setOrders(orderList);
     }
     setLoading(false);
@@ -41,6 +42,19 @@ export function AdminOrdersPage() {
     const res = await fetchApi(`/orders/${orderId}/cancel`, { method: 'POST' });
     if (res.success) { alert('Order cancelled.'); loadOrders(); }
     else alert(res.message || 'Failed to cancel order.');
+    setActionId(null);
+  };
+
+  const handleApproveReturn = async (orderId: string) => {
+    if (!window.confirm('Confirm receipt of returned items into warehouse stock? Product stock will be increased and customer will be notified.')) return;
+    setActionId(orderId);
+    const res = await fetchApi(`/orders/${orderId}/approve-return`, { method: 'POST' });
+    if (res.success) {
+      alert('Return approved: Stock increased & customer notified!');
+      loadOrders();
+    } else {
+      alert(res.message || 'Failed to approve return.');
+    }
     setActionId(null);
   };
 
@@ -123,6 +137,7 @@ export function AdminOrdersPage() {
           {filteredOrders.map((o) => {
             const isDelivered = o.status === 'DELIVERED' || o.status === 'COMPLETED';
             const isPendingOrConfirmed = o.status === 'CONFIRMED' || o.status === 'PENDING';
+            const isReturnRequested = o.status === 'RETURN_REQUESTED';
             const isCancelled = o.status === 'CANCELLED';
 
             return (
@@ -162,6 +177,16 @@ export function AdminOrdersPage() {
                   {!isCancelled && (
                     <button onClick={() => setInvoiceOrder(o)} className="btn-ghost py-2 text-xs">
                       <FileText size={13} /> GST Invoice
+                    </button>
+                  )}
+                  {isReturnRequested && (
+                    <button
+                      disabled={actionId === o.id}
+                      onClick={() => handleApproveReturn(o.id)}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100 disabled:opacity-50 transition cursor-pointer"
+                    >
+                      <RotateCcw size={13} />
+                      {actionId === o.id ? 'Processing Restock...' : 'Approve Return & Restock'}
                     </button>
                   )}
                   {isPendingOrConfirmed && (

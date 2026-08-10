@@ -84,12 +84,26 @@ export class OrderController {
     }
   }
 
-  static requestReturn(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  static async requestReturn(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
       const { reason, notes } = req.body;
       const order = OrderService.requestReturn(id, reason, notes, req.user?.userId, req.user?.name);
       res.json({ success: true, message: 'Return request submitted successfully.', data: order });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async approveReturn(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const order = await OrderService.approveReturn(id, req.user?.userId, req.user?.name);
+      res.json({
+        success: true,
+        message: 'Product return received and approved. Stock restocked & customer notified.',
+        data: order,
+      });
     } catch (error) {
       next(error);
     }
