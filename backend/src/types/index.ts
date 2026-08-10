@@ -118,6 +118,7 @@ export interface Order {
   status: OrderStatus;
   returnReason?: string;
   returnNotes?: string;
+  deliveredAt?: string;
   items?: OrderItem[];
   createdAt: string;
   updatedAt: string;

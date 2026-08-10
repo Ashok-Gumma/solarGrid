@@ -225,8 +225,10 @@ export class OrderService {
       throw new AppError('Order not found.', 404);
     }
 
+    const now = new Date().toISOString();
     order.status = 'DELIVERED';
-    order.updatedAt = new Date().toISOString();
+    order.deliveredAt = now;
+    order.updatedAt = now;
 
     const orderItems = db.get('orderItems').filter((i) => i.orderId === order.id);
     const products = db.get('products');
@@ -270,7 +272,22 @@ export class OrderService {
       throw new AppError('Order not found.', 404);
     }
 
+    if (order.status !== 'DELIVERED' && order.status !== 'COMPLETED') {
+      throw new AppError('Only delivered orders can be submitted for return.', 400);
+    }
+
+    // 15-Day Return Window Validation
+    const deliveryTime = order.deliveredAt ? new Date(order.deliveredAt).getTime() : new Date(order.updatedAt).getTime();
+    const currentTime = new Date().getTime();
+    const diffInDays = (currentTime - deliveryTime) / (1000 * 60 * 60 * 24);
+
+    if (diffInDays > 15) {
+      throw new AppError(`The 15-day return period for order ${order.orderNumber} has expired. Returns are only allowed within 15 days of delivery.`, 400);
+    }
+
     order.status = 'RETURN_REQUESTED';
+    order.returnReason = reason;
+    order.returnNotes = notes || '';
     order.updatedAt = new Date().toISOString();
 
     logAudit(userId, userName, 'RETURN_ORDER', 'Order', orderId, { orderNumber: order.orderNumber, reason, notes });

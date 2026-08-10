@@ -153,19 +153,31 @@ export function MyOrdersPage() {
                       {cancellingId === o.id ? 'Cancelling...' : 'Cancel Order'}
                     </button>
                   )}
-                  {isDelivered && (
-                    <>
-                      <button onClick={() => setLocation('/book-service')} className="btn-ghost py-2 text-xs">
-                        <Wrench size={13} /> Book Service
-                      </button>
-                      <button
-                        onClick={() => { setSelectedOrder(o); setShowReturnModal(true); }}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-100 transition cursor-pointer"
-                      >
-                        <RotateCcw size={13} /> Request Return
-                      </button>
-                    </>
-                  )}
+                  {isDelivered && (() => {
+                    const deliveryTime = o.deliveredAt ? new Date(o.deliveredAt).getTime() : new Date(o.updatedAt).getTime();
+                    const diffInDays = (new Date().getTime() - deliveryTime) / (1000 * 60 * 60 * 24);
+                    const canReturn = diffInDays <= 15;
+
+                    return (
+                      <>
+                        <button onClick={() => setLocation('/book-service')} className="btn-ghost py-2 text-xs">
+                          <Wrench size={13} /> Book Service
+                        </button>
+                        {canReturn ? (
+                          <button
+                            onClick={() => { setSelectedOrder(o); setShowReturnModal(true); }}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-100 transition cursor-pointer"
+                          >
+                            <RotateCcw size={13} /> Request Return
+                          </button>
+                        ) : (
+                          <span className="text-[11px] font-medium text-slate-400 italic">
+                            Return Period Expired (15 Days)
+                          </span>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             );
