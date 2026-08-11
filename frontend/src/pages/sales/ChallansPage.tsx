@@ -37,7 +37,8 @@ export function ChallansPage() {
       const chalList = chalRes?.data || chalRes?.data?.data || (Array.isArray(chalRes) ? chalRes : []);
       setChallans(Array.isArray(chalList) ? chalList : []);
 
-      const ordList = ordRes?.orders || ordRes?.data || (Array.isArray(ordRes) ? ordRes : []);
+      const ordResAny = ordRes as any;
+      const ordList = ordResAny?.orders || ordRes?.data || (Array.isArray(ordRes) ? ordRes : []);
       if (Array.isArray(ordList)) {
         const map: Record<string, Order> = {};
         ordList.forEach((o: Order) => {
