@@ -1,4 +1,4 @@
-export type Role = 'ADMIN' | 'WAREHOUSE' | 'TECHNICIAN' | 'CUSTOMER';
+export type Role = 'ADMIN' | 'SALES' | 'WAREHOUSE' | 'ACCOUNTS' | 'TECHNICIAN' | 'CUSTOMER';
 export type CustomerType = 'RETAIL' | 'WHOLESALE' | 'DISTRIBUTOR';
 export type CustomerStatus = 'LEAD' | 'ACTIVE' | 'INACTIVE';
 export type ChallanStatus = 'DRAFT' | 'CONFIRMED' | 'CANCELLED';

@@ -15,7 +15,9 @@ export function SigninPage() {
 
   const rolePortals: { role: Role; label: string; icon: any; emailHint: string }[] = [
     { role: 'ADMIN',      label: 'Admin',      icon: ShieldCheck, emailHint: 'admin@solargrid.com' },
+    { role: 'SALES',      label: 'Sales',      icon: ShoppingBag, emailHint: 'sales@solargrid.com' },
     { role: 'WAREHOUSE',  label: 'Warehouse',  icon: Box,         emailHint: 'warehouse@solargrid.com' },
+    { role: 'ACCOUNTS',   label: 'Accounts',   icon: Lock,        emailHint: 'accounts@solargrid.com' },
     { role: 'TECHNICIAN', label: 'Technician', icon: HardHat,     emailHint: 'tech@solargrid.com' },
     { role: 'CUSTOMER',   label: 'Customer',   icon: ShoppingBag, emailHint: '' },
   ];
@@ -33,7 +35,12 @@ export function SigninPage() {
     const loggedInUser = await login(email, password);
     if (loggedInUser) {
       const redirects: Record<Role, string> = {
-        ADMIN: '/admin', WAREHOUSE: '/inventory', TECHNICIAN: '/technician', CUSTOMER: '/store',
+        ADMIN: '/admin',
+        SALES: '/customers',
+        WAREHOUSE: '/inventory',
+        ACCOUNTS: '/challans',
+        TECHNICIAN: '/technician',
+        CUSTOMER: '/store',
       };
       setLocation(redirects[loggedInUser.role] || '/store');
     } else {

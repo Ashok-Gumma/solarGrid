@@ -21,7 +21,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   const navMap: Record<Role, NavItem[]> = {
     ADMIN: [
       { href: '/admin',        label: 'Overview',        icon: LayoutDashboard },
-      { href: '/customers',    label: 'Customers',       icon: Users },
+      { href: '/customers',    label: 'Customers CRM',   icon: Users },
       { href: '/inventory',    label: 'Inventory & Stock', icon: Box },
       { href: '/challans',     label: 'Sales Challans',  icon: FileText },
       { href: '/orders',       label: 'Orders',          icon: ShoppingBag },
@@ -30,15 +30,33 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       { href: '/audit-logs',   label: 'Audit Logs',      icon: Activity },
       { href: '/profile',      label: 'My Profile & Settings', icon: Settings2 },
     ],
+    SALES: [
+      { href: '/admin',        label: 'Overview',        icon: LayoutDashboard },
+      { href: '/customers',    label: 'Customer CRM',    icon: Users },
+      { href: '/orders',       label: 'Orders Management', icon: ShoppingBag },
+      { href: '/challans',     label: 'Sales Challans',  icon: FileText },
+      { href: '/store',        label: 'Product Catalog', icon: Package },
+      { href: '/profile',      label: 'My Profile',      icon: Settings2 },
+    ],
     WAREHOUSE: [
       { href: '/inventory',       label: 'Inventory Management', icon: Box },
       { href: '/stock-movements', label: 'Stock Movements',      icon: Layers },
       { href: '/challans',        label: 'Challans Dispatch',    icon: FileText },
+      { href: '/profile',         label: 'My Profile',           icon: Settings2 },
+    ],
+    ACCOUNTS: [
+      { href: '/admin',        label: 'Overview & Analytics', icon: LayoutDashboard },
+      { href: '/challans',     label: 'Challans & Invoices', icon: FileText },
+      { href: '/orders',       label: 'Orders & Payments', icon: ShoppingBag },
+      { href: '/customers',    label: 'Customer Accounts', icon: Users },
+      { href: '/audit-logs',   label: 'Audit Ledger',     icon: Activity },
+      { href: '/profile',      label: 'My Profile',       icon: Settings2 },
     ],
     TECHNICIAN: [
       { href: '/technician',  label: "Today's Route & Jobs", icon: HardHat },
       { href: '/installations', label: 'Installations',      icon: HardHat },
       { href: '/services',    label: 'Service & Repair',     icon: Wrench },
+      { href: '/profile',     label: 'My Profile',           icon: Settings2 },
     ],
     CUSTOMER: [
       { href: '/store',          label: 'Shop Equipment',          icon: ShoppingBag },

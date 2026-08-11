@@ -20,10 +20,10 @@ router.get('/auth/me', authenticate, AuthController.getMe);
 router.put('/auth/profile', authenticate, AuthController.updateProfile);
 
 // --- CUSTOMERS ---
-router.get('/customers', authenticate, authorize('ADMIN', 'WAREHOUSE', 'TECHNICIAN'), CustomerController.getAll);
-router.get('/customers/:id', authenticate, authorize('ADMIN', 'WAREHOUSE', 'TECHNICIAN'), CustomerController.getById);
-router.post('/customers', authenticate, authorize('ADMIN'), CustomerController.create);
-router.put('/customers/:id', authenticate, authorize('ADMIN'), CustomerController.update);
+router.get('/customers', authenticate, authorize('ADMIN', 'SALES', 'ACCOUNTS'), CustomerController.getAll);
+router.get('/customers/:id', authenticate, authorize('ADMIN', 'SALES', 'ACCOUNTS'), CustomerController.getById);
+router.post('/customers', authenticate, authorize('ADMIN', 'SALES'), CustomerController.create);
+router.put('/customers/:id', authenticate, authorize('ADMIN', 'SALES'), CustomerController.update);
 router.post('/customers/:id/addresses', authenticate, CustomerController.addAddress);
 
 // --- PRODUCTS & CATALOG ---
@@ -33,7 +33,7 @@ router.post('/products', authenticate, authorize('ADMIN', 'WAREHOUSE'), ProductC
 router.put('/products/:id', authenticate, authorize('ADMIN', 'WAREHOUSE'), ProductController.update);
 
 // --- INVENTORY & STOCK MOVEMENTS ---
-router.get('/inventory', authenticate, authorize('ADMIN', 'WAREHOUSE', 'TECHNICIAN'), (req, res, next) => {
+router.get('/inventory', authenticate, authorize('ADMIN', 'WAREHOUSE'), (req, res, next) => {
   try {
     const products = db.get('products');
     const lowStockCount = products.filter((p) => p.currentStock <= p.minStockAlert).length;
@@ -49,13 +49,13 @@ router.get('/inventory', authenticate, authorize('ADMIN', 'WAREHOUSE', 'TECHNICI
     next(err);
   }
 });
-router.get('/stock-movements', authenticate, authorize('ADMIN', 'WAREHOUSE', 'TECHNICIAN'), InventoryController.getMovements);
+router.get('/stock-movements', authenticate, authorize('ADMIN', 'WAREHOUSE'), InventoryController.getMovements);
 router.post('/stock-movements', authenticate, authorize('ADMIN', 'WAREHOUSE'), InventoryController.adjust);
 
 // --- SALES CHALLANS ---
-router.get('/challans', authenticate, authorize('ADMIN', 'WAREHOUSE', 'TECHNICIAN'), ChallanController.getAll);
-router.get('/challans/:id', authenticate, authorize('ADMIN', 'WAREHOUSE', 'TECHNICIAN'), ChallanController.getById);
-router.post('/challans', authenticate, authorize('ADMIN', 'WAREHOUSE'), ChallanController.create);
+router.get('/challans', authenticate, authorize('ADMIN', 'SALES', 'ACCOUNTS', 'WAREHOUSE'), ChallanController.getAll);
+router.get('/challans/:id', authenticate, authorize('ADMIN', 'SALES', 'ACCOUNTS', 'WAREHOUSE'), ChallanController.getById);
+router.post('/challans', authenticate, authorize('ADMIN', 'SALES', 'WAREHOUSE'), ChallanController.create);
 router.post('/challans/:id/confirm', authenticate, authorize('ADMIN', 'WAREHOUSE'), ChallanController.confirm);
 router.delete('/challans/:id', authenticate, authorize('ADMIN', 'WAREHOUSE'), ChallanController.delete);
 
@@ -115,8 +115,8 @@ router.post('/notifications/:id/read', authenticate, (req: AuthenticatedRequest,
 });
 
 // --- CRM & AUDIT LOGS ---
-router.post('/crm/followups', authenticate, authorize('ADMIN'), CrmController.createFollowUp);
-router.get('/audit-logs', authenticate, authorize('ADMIN'), (req, res) => {
+router.post('/crm/followups', authenticate, authorize('ADMIN', 'SALES'), CrmController.createFollowUp);
+router.get('/audit-logs', authenticate, authorize('ADMIN', 'ACCOUNTS'), (req, res) => {
   const logs = db.get('auditLogs');
   res.json({ success: true, data: logs });
 });
