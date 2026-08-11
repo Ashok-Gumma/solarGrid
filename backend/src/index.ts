@@ -25,8 +25,11 @@ async function ensureSeedData() {
   await db.ready;
   const users = db.get('users');
   const hasDefaultCustomer = users.some((u) => u.email.toLowerCase() === 'user@gmail.com');
-  if (users.length === 0 || !hasDefaultCustomer) {
-    console.log('[SEED] Initializing seed accounts...');
+  const hasSales = users.some((u) => u.email.toLowerCase() === 'sales@solargrid.com');
+  const hasAccounts = users.some((u) => u.email.toLowerCase() === 'accounts@solargrid.com');
+
+  if (users.length === 0 || !hasDefaultCustomer || !hasSales || !hasAccounts) {
+    console.log('[SEED] Auto-seeding missing system accounts into PostgreSQL Cloud...');
     await seedDatabase();
   }
 }
@@ -39,6 +42,20 @@ app.get(['/', '/health', '/api/health'], (req, res) => {
     service: 'SolarGrid ERP/CRM Backend Engine',
     timestamp: new Date().toISOString(),
   });
+});
+
+// Direct Seed Trigger Endpoint for Cloud PostgreSQL Synchronization
+app.get(['/seed', '/api/seed'], async (req, res) => {
+  try {
+    await seedDatabase();
+    res.json({
+      success: true,
+      message: 'PostgreSQL Cloud Database successfully seeded with system accounts (Admin, Sales, Warehouse, Accounts, Technician, Customer).',
+      users: db.get('users').map((u) => ({ id: u.id, email: u.email, role: u.role })),
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // API Routes (Mounted under both /api and / for universal compatibility)

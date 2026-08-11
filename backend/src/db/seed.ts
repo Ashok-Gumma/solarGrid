@@ -104,7 +104,7 @@ export async function seedDatabase() {
         await db.pgPool.query(
           `INSERT INTO users (id, name, email, password_hash, role, phone, created_at, updated_at)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-           ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
+           ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash, role = EXCLUDED.role, name = EXCLUDED.name`,
           [u.id, u.name, u.email, u.passwordHash, u.role, u.phone || '', u.createdAt, u.updatedAt]
         );
       }
