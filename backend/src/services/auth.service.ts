@@ -5,10 +5,19 @@ import { generateToken } from '../utils/jwt.js';
 import { AppError } from '../middleware/error.js';
 import { logAudit } from '../middleware/audit.js';
 
+import { seedDatabase } from '../db/seed.js';
+
 export class AuthService {
   static async login(email: string, password?: string, roleOverride?: Role) {
-    const users = db.get('users');
-    const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    let users = db.get('users');
+    let user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+
+    if (!user && ['user@gmail.com', 'admin@solargrid.com', 'warehouse@solargrid.com', 'tech@solargrid.com'].includes(email.toLowerCase())) {
+      console.log(`[AUTH] Seed user ${email} not found in memory, running seedDatabase...`);
+      await seedDatabase();
+      users = db.get('users');
+      user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    }
 
     if (!user) {
       throw new AppError('Invalid credentials.', 401);

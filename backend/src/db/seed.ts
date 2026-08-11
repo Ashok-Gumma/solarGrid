@@ -67,13 +67,45 @@ export async function seedDatabase() {
   ];
 
   const users = db.get('users');
-  users.push(...initialUsers);
+  for (const u of initialUsers) {
+    if (!users.some((existing) => existing.email.toLowerCase() === u.email.toLowerCase())) {
+      users.push(u);
+    }
+  }
 
   const customers = db.get('customers');
-  customers.push(...initialCustomers);
+  for (const c of initialCustomers) {
+    if (!customers.some((existing) => existing.id === c.id || existing.email.toLowerCase() === c.email.toLowerCase())) {
+      customers.push(c);
+    }
+  }
+
+  if (db.pgPool) {
+    try {
+      for (const u of initialUsers) {
+        await db.pgPool.query(
+          `INSERT INTO users (id, name, email, password_hash, role, phone, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+           ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
+          [u.id, u.name, u.email, u.passwordHash, u.role, u.phone || '', u.createdAt, u.updatedAt]
+        );
+      }
+      for (const c of initialCustomers) {
+        await db.pgPool.query(
+          `INSERT INTO customers (id, user_id, name, business_name, email, phone, gst_number, customer_type, status, notes, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+           ON CONFLICT (id) DO NOTHING`,
+          [c.id, c.userId, c.name, c.businessName || '', c.email, c.phone, c.gstNumber || '', c.customerType, c.status, c.notes, c.createdAt, c.updatedAt]
+        );
+      }
+      console.log('🐘 Seed users successfully synced to PostgreSQL database.');
+    } catch (pgErr: any) {
+      console.warn('⚠️ Could not insert seed users into PostgreSQL:', pgErr.message);
+    }
+  }
 
   db.saveData();
-  console.log('✅ Clean database engine initialized with 0 fake products, 0 fake customers, and 0 fake orders.');
+  console.log('✅ System accounts initialized.');
 }
 
 if (process.argv[1]?.includes('seed')) {

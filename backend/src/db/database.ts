@@ -51,6 +51,7 @@ class DatabaseEngine {
   private inTransaction = false;
   private backupData: string | null = null;
   public pgPool: pg.Pool | null = null;
+  public ready: Promise<void>;
 
   // Priority Lock Queue for Deadlock-Free Concurrency
   private priorityQueue: {
@@ -63,7 +64,7 @@ class DatabaseEngine {
 
   constructor() {
     this.data = this.loadData();
-    this.initPgPool();
+    this.ready = this.initPgPool();
   }
 
   private async initPgPool() {
