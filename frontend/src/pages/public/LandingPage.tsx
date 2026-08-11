@@ -124,6 +124,7 @@ export function LandingPage() {
   const [cartCount, setCartCount] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeModal, setActiveModal] = useState<DealItem | null>(null);
+  const [infoModal, setInfoModal] = useState<'privacy' | 'terms' | 'support' | null>(null);
 
   const categories = ['All', 'Panels', 'Inverters', 'Storage', 'Mounting', 'Smart Grid'];
 
@@ -614,9 +615,15 @@ export function LandingPage() {
       <footer className="mx-auto max-w-7xl px-6 md:px-12 pt-16 border-t border-black/5 text-xs text-slate-500 flex flex-col md:flex-row items-center justify-between gap-4">
         <p>© 2026 SolarGrid Technologies Inc. All rights reserved.</p>
         <div className="flex items-center gap-6 font-medium text-slate-600">
-          <a href="#privacy" className="hover:text-slate-900">Privacy Policy</a>
-          <a href="#terms" className="hover:text-slate-900">Terms of Service</a>
-          <a href="#contact" className="hover:text-slate-900">ERP Support Desk</a>
+          <button onClick={() => setInfoModal('privacy')} className="hover:text-slate-900 transition cursor-pointer">
+            Privacy Policy
+          </button>
+          <button onClick={() => setInfoModal('terms')} className="hover:text-slate-900 transition cursor-pointer">
+            Terms of Service
+          </button>
+          <button onClick={() => setInfoModal('support')} className="hover:text-slate-900 transition cursor-pointer">
+            ERP Support Desk
+          </button>
         </div>
       </footer>
 
@@ -636,7 +643,7 @@ export function LandingPage() {
               </span>
               <button
                 onClick={() => setActiveModal(null)}
-                className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-900 font-bold"
+                className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-900 font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -666,6 +673,118 @@ export function LandingPage() {
                 Add To Cart
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Info Modals (Privacy Policy, Terms of Service, ERP Support Desk) */}
+      {infoModal && (
+        <div
+          onClick={() => setInfoModal(null)}
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 animate-soft-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-[2rem] p-8 max-w-xl w-full shadow-2xl space-y-6 animate-rise border border-black/5 max-h-[85vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <span className="bento-pill px-3 py-1 text-[11px] font-bold text-slate-800 bg-slate-100 uppercase tracking-wider">
+                {infoModal === 'privacy' && 'Data Protection & Privacy Policy'}
+                {infoModal === 'terms' && 'Terms of Service & Warranty Rules'}
+                {infoModal === 'support' && 'ERP & Technical Support Desk'}
+              </span>
+              <button
+                onClick={() => setInfoModal(null)}
+                className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-900 font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Privacy Policy Modal */}
+            {infoModal === 'privacy' && (
+              <div className="space-y-4 text-xs text-slate-600 leading-relaxed font-medium">
+                <h3 className="text-xl font-bold text-slate-900">SolarGrid Privacy & Data Security</h3>
+                <p>
+                  At SolarGrid Technologies, we prioritize the confidentiality of customer equipment orders, DISCOM net-metering applications, and user accounts under the <strong>Indian Digital Personal Data Protection (DPDP) Act 2023</strong>.
+                </p>
+                <div className="space-y-2 border-l-2 border-emerald-500 pl-4 py-1">
+                  <b className="text-slate-900 block font-bold">1. Data Collected</b>
+                  <p>Account profiles (Name, Email, Mobile Phone), Customer Business Details (GSTIN, Business Name), and Site Delivery Addresses.</p>
+                </div>
+                <div className="space-y-2 border-l-2 border-emerald-500 pl-4 py-1">
+                  <b className="text-slate-900 block font-bold">2. Government Scheme Integration</b>
+                  <p>Information submitted for PM Surya Ghar and PM-KUSUM subsidy claims is transmitted via encrypted API gateways strictly to state DISCOMs and nodal renewable energy agencies.</p>
+                </div>
+                <div className="space-y-2 border-l-2 border-emerald-500 pl-4 py-1">
+                  <b className="text-slate-900 block font-bold">3. Enterprise Security Guarantee</b>
+                  <p>All data in transit and at rest is secured via 256-bit TLS 1.3 SSL encryption. SolarGrid never sells customer telemetry or phone numbers to third parties.</p>
+                </div>
+              </div>
+            )}
+
+            {/* Terms of Service Modal */}
+            {infoModal === 'terms' && (
+              <div className="space-y-4 text-xs text-slate-600 leading-relaxed font-medium">
+                <h3 className="text-xl font-bold text-slate-900">Terms of Service & Warranty Policy</h3>
+                <p>
+                  By using SolarGrid ERP & Equipment Catalog, customer accounts and authorized dealer representatives agree to the following operational terms:
+                </p>
+                <div className="space-y-2 border-l-2 border-blue-500 pl-4 py-1">
+                  <b className="text-slate-900 block font-bold">1. Equipment Warranty Ledger</b>
+                  <p>Solar panels include a 25-year linear performance warranty; Hybrid inverters include 5-year replacement warranty; LiFePO4 batteries include 10-year / 6,000 cycle warranty.</p>
+                </div>
+                <div className="space-y-2 border-l-2 border-blue-500 pl-4 py-1">
+                  <b className="text-slate-900 block font-bold">2. 15-Day Inspection & Return Window</b>
+                  <p>Customers may request equipment returns within 15 days of confirmed delivery for defective, incompatible, or scope-changed orders directly from the <strong>My Orders</strong> portal.</p>
+                </div>
+                <div className="space-y-2 border-l-2 border-blue-500 pl-4 py-1">
+                  <b className="text-slate-900 block font-bold">3. Technician On-Site Access</b>
+                  <p>Customer site locations must provide safe rooftop access, structural stability, and a active grid power connection during crew installation and testing.</p>
+                </div>
+              </div>
+            )}
+
+            {/* ERP Support Desk Modal */}
+            {infoModal === 'support' && (
+              <div className="space-y-4 text-xs text-slate-600 leading-relaxed font-medium">
+                <h3 className="text-xl font-bold text-slate-900">SolarGrid Support & RMA Helpdesk</h3>
+                <p>
+                  Our dedicated engineering desk assists solar dealers, warehouse managers, field technicians, and retail customers across all 28 states.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                    <span className="text-[10px] font-bold uppercase text-slate-400">Toll-Free Helpline</span>
+                    <b className="text-sm font-extrabold text-slate-900 block">1800 555 SOLAR (76527)</b>
+                    <span className="text-[10px] text-slate-500">Mon - Sat (8:00 AM - 8:00 PM IST)</span>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                    <span className="text-[10px] font-bold uppercase text-slate-400">Support Email</span>
+                    <b className="text-sm font-extrabold text-emerald-700 block">support@solargrid.com</b>
+                    <span className="text-[10px] text-slate-500">Avg ticket response &lt; 2 hrs</span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-slate-800 space-y-2">
+                  <b className="text-xs font-bold text-slate-900 block">24/7 Technician Emergency Dispatch</b>
+                  <p className="text-[11px] leading-relaxed">
+                    Experiencing a grid failure or critical solar inverter tripping? Submit a service ticket via your portal profile or book an emergency technician visit.
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <Link
+                    href="/signin"
+                    onClick={() => setInfoModal(null)}
+                    className="rounded-full bg-slate-900 px-5 py-2.5 text-xs font-bold text-white hover:bg-black transition"
+                  >
+                    Log In to Service Desk
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
