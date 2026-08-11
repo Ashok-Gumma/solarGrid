@@ -103,6 +103,16 @@ function MainLayout() {
     });
   };
 
+  const handleClearCart = () => {
+    updateCartAndPersist([]);
+    try {
+      localStorage.removeItem(getStorageKey());
+      localStorage.removeItem('solargrid_cart_guest');
+    } catch (err) {
+      console.error('Failed to clear cart storage:', err);
+    }
+  };
+
   const handleAddToCart = (product: Product, quantity = 1) => {
     updateCartAndPersist((prev) => {
       const existing = prev.find((line) => line.product.id === product.id);
@@ -176,7 +186,7 @@ function MainLayout() {
               {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN', 'SALES']}><CartPage cart={cart} onUpdateQty={handleUpdateCartQty} onRemove={handleRemoveFromCart} /></ProtectedRoute>}
             </Route>
             <Route path="/checkout">
-              {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN', 'SALES']}><CheckoutPage cart={cart} onClearCart={() => setCart([])} /></ProtectedRoute>}
+              {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN', 'SALES']}><CheckoutPage cart={cart} onClearCart={handleClearCart} /></ProtectedRoute>}
             </Route>
             <Route path="/my-orders">
               {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN']}><MyOrdersPage /></ProtectedRoute>}
