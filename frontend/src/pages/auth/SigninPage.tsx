@@ -17,13 +17,13 @@ export function SigninPage() {
     { role: 'ADMIN',      label: 'Admin',      icon: ShieldCheck, emailHint: 'admin@solargrid.com' },
     { role: 'WAREHOUSE',  label: 'Warehouse',  icon: Box,         emailHint: 'warehouse@solargrid.com' },
     { role: 'TECHNICIAN', label: 'Technician', icon: HardHat,     emailHint: 'tech@solargrid.com' },
-    { role: 'CUSTOMER',   label: 'Customer',   icon: ShoppingBag, emailHint: 'customer@solargrid.com' },
+    { role: 'CUSTOMER',   label: 'Customer',   icon: ShoppingBag, emailHint: '' },
   ];
 
   const handleTabClick = (p: typeof rolePortals[0]) => {
     setActiveTab(p.role);
-    setEmail(p.emailHint);
-    setPassword('password123');
+    if (p.role !== 'CUSTOMER') { setEmail(p.emailHint); setPassword('password123'); }
+    else { setEmail(''); setPassword(''); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
