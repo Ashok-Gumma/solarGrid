@@ -34,7 +34,7 @@ export class ChallanService {
       throw new AppError('Sales Challan not found.', 404);
     }
 
-    const items = db.get('challanItems').filter((i) => i.challanId === challan.id);
+    const items = db.groupByKey(db.get('challanItems'), 'challanId').get(challan.id) || [];
     return { ...challan, items };
   }
 

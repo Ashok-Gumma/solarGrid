@@ -25,9 +25,10 @@ export class OrderService {
     const startIndex = (page - 1) * limit;
     const paginatedOrders = orders.slice(startIndex, startIndex + limit);
     const orderItems = db.get('orderItems');
+    const itemsByOrderId = db.groupByKey(orderItems, 'orderId');
 
     const ordersWithItems = paginatedOrders.map((order) => {
-      const items = orderItems.filter((i) => i.orderId === order.id);
+      const items = itemsByOrderId.get(order.id) || [];
       return { ...order, items };
     });
 
@@ -50,7 +51,8 @@ export class OrderService {
     }
 
     const orderItems = db.get('orderItems');
-    const items = orderItems.filter((i) => i.orderId === order.id);
+    const itemsByOrderId = db.groupByKey(orderItems, 'orderId');
+    const items = itemsByOrderId.get(order.id) || [];
     return { ...order, items };
   }
 

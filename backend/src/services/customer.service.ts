@@ -67,14 +67,14 @@ export class CustomerService {
     }
 
     const realId = customer.id;
-    const addresses = db.get('addresses').filter((a) => a.customerId === realId);
-    const orders = db.get('orders').filter((o) => o.customerId === realId);
-    const challans = db.get('challans').filter((ch) => ch.customerId === realId);
-    const installations = db.get('installationJobs').filter((i) => i.customerId === realId);
-    const services = db.get('serviceRequests').filter((s) => s.customerId === realId);
-    const warranties = db.get('warranties').filter((w) => w.customerId === realId);
-    const followups = db.get('crmFollowUps').filter((f) => f.customerId === realId);
-    const timeline = db.get('customerTimelineEvents').filter((t) => t.customerId === realId);
+    const addresses = db.groupByKey(db.get('addresses'), 'customerId').get(realId) || [];
+    const orders = db.groupByKey(db.get('orders'), 'customerId').get(realId) || [];
+    const challans = db.groupByKey(db.get('challans'), 'customerId').get(realId) || [];
+    const installations = db.groupByKey(db.get('installationJobs'), 'customerId').get(realId) || [];
+    const services = db.groupByKey(db.get('serviceRequests'), 'customerId').get(realId) || [];
+    const warranties = db.groupByKey(db.get('warranties'), 'customerId').get(realId) || [];
+    const followups = db.groupByKey(db.get('crmFollowUps'), 'customerId').get(realId) || [];
+    const timeline = db.groupByKey(db.get('customerTimelineEvents'), 'customerId').get(realId) || [];
 
     return {
       ...customer,

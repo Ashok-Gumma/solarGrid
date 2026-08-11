@@ -208,3 +208,27 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     details JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Performance Indexes for Fast Queries and Foreign Key Joins
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_customers_user_id ON customers(user_id);
+CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
+CREATE INDEX IF NOT EXISTS idx_addresses_customer_id ON addresses(customer_id);
+CREATE INDEX IF NOT EXISTS idx_products_sku ON products(sku);
+CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id);
+CREATE INDEX IF NOT EXISTS idx_stock_movements_product_id ON stock_movements(product_id);
+CREATE INDEX IF NOT EXISTS idx_orders_customer_id ON orders(customer_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
+CREATE INDEX IF NOT EXISTS idx_challans_order_id ON challans(order_id);
+CREATE INDEX IF NOT EXISTS idx_challans_customer_id ON challans(customer_id);
+CREATE INDEX IF NOT EXISTS idx_challan_items_challan_id ON challan_items(challan_id);
+CREATE INDEX IF NOT EXISTS idx_installation_jobs_order_id ON installation_jobs(order_id);
+CREATE INDEX IF NOT EXISTS idx_installation_jobs_customer_id ON installation_jobs(customer_id);
+CREATE INDEX IF NOT EXISTS idx_warranties_customer_id ON warranties(customer_id);
+CREATE INDEX IF NOT EXISTS idx_warranties_order_id ON warranties(order_id);
+CREATE INDEX IF NOT EXISTS idx_service_requests_customer_id ON service_requests(customer_id);
+CREATE INDEX IF NOT EXISTS idx_crm_follow_ups_customer_id ON crm_follow_ups(customer_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
+

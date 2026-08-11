@@ -148,32 +148,45 @@ class DatabaseEngine {
     return this.getInitialSchema();
   }
 
-  public saveData() {
-    // JSON file writing disabled - Operating in Pure Memory / PostgreSQL Database Mode
-    return;
+  public async saveDataAsync() {
+    try {
+      await fs.promises.writeFile(DATA_FILE, JSON.stringify(this.data, null, 2), 'utf-8');
+    } catch (err: any) {
+      console.warn('Non-blocking local db save warning:', err.message);
+    }
   }
 
-  // Transaction with Deadlock Rollback Protection
+  public saveData() {
+    this.saveDataAsync();
+  }
+
+  // Lightweight Transaction Execution with Rollback Protection
   public async transaction<T>(callback: () => Promise<T> | T): Promise<T> {
     if (this.inTransaction) {
       return await callback();
     }
 
     this.inTransaction = true;
-    this.backupData = JSON.stringify(this.data);
+    // Shallow snapshot of table arrays for fast rollback without heavy JSON stringification
+    const snapshotKeys = Object.keys(this.data) as (keyof DatabaseSchema)[];
+    const snapshot: Partial<DatabaseSchema> = {};
+    for (const key of snapshotKeys) {
+      snapshot[key] = [...(this.data[key] as any[])] as any;
+    }
 
     try {
       const result = await callback();
       this.inTransaction = false;
-      this.backupData = null;
-      this.saveData();
+      this.saveDataAsync();
       return result;
     } catch (error) {
-      if (this.backupData) {
-        this.data = JSON.parse(this.backupData);
+      // Fast array rollback
+      for (const key of snapshotKeys) {
+        if (snapshot[key]) {
+          this.data[key] = snapshot[key] as any;
+        }
       }
       this.inTransaction = false;
-      this.backupData = null;
       throw error;
     }
   }
@@ -182,7 +195,6 @@ class DatabaseEngine {
   public async transactionWithPriority<T>(priority: LockPriority, callback: () => Promise<T> | T): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       this.priorityQueue.push({ priority, resolve, reject, task: callback });
-      // Sort by priority ascending (1 = Highest Priority)
       this.priorityQueue.sort((a, b) => a.priority - b.priority);
       this.processQueue();
     });
@@ -212,10 +224,50 @@ class DatabaseEngine {
     return this.data[table];
   }
 
+  // Fast O(N) Map-indexing helper for relational standard lookups
+  public groupByKey<T>(items: T[], key: keyof T): Map<string, T[]> {
+    const map = new Map<string, T[]>();
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const k = String(item[key]);
+      const list = map.get(k);
+      if (list) {
+        list.push(item);
+      } else {
+        map.set(k, [item]);
+      }
+    }
+    return map;
+  }
+
+  // Fast O(1) Key-to-Object Map index builder
+  public indexByKey<T>(items: T[], key: keyof T): Map<string, T> {
+    const map = new Map<string, T>();
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const k = String(item[key]);
+      map.set(k, item);
+    }
+    return map;
+  }
+
+  // Safe async query execution on PostgreSQL pool
+  public async queryPg(sql: string, params: any[] = []) {
+    if (!this.pgPool) return null;
+    try {
+      return await this.pgPool.query(sql, params);
+    } catch (err: any) {
+      console.error('PostgreSQL Query Execution Error:', err.message);
+      return null;
+    }
+  }
+
   public reset() {
     this.data = this.getInitialSchema();
-    this.saveData();
+    this.saveDataAsync();
   }
 }
 
 export const db = new DatabaseEngine();
+
+
