@@ -17,7 +17,7 @@ export function SigninPage() {
     { role: 'ADMIN',      label: 'Admin',      icon: ShieldCheck, emailHint: 'admin@solargrid.com' },
     { role: 'WAREHOUSE',  label: 'Warehouse',  icon: Box,         emailHint: 'warehouse@solargrid.com' },
     { role: 'TECHNICIAN', label: 'Technician', icon: HardHat,     emailHint: 'tech@solargrid.com' },
-    { role: 'CUSTOMER',   label: 'Customer',   icon: ShoppingBag, emailHint: '' },
+    { role: 'CUSTOMER',   label: 'Customer',   icon: ShoppingBag, emailHint: 'customer@solargrid.com' },
   ];
 
   const handleTabClick = (p: typeof rolePortals[0]) => {

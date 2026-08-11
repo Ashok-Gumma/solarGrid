@@ -37,6 +37,15 @@ export async function seedDatabase() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
+    {
+      id: 'usr-customer',
+      name: 'Default Customer',
+      email: 'customer@solargrid.com',
+      passwordHash,
+      role: 'CUSTOMER',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
   ];
 
   const users = db.get('users');
