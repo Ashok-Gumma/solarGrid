@@ -20,8 +20,8 @@ router.get('/auth/me', authenticate, AuthController.getMe);
 router.put('/auth/profile', authenticate, AuthController.updateProfile);
 
 // --- CUSTOMERS ---
-router.get('/customers', authenticate, authorize('ADMIN'), CustomerController.getAll);
-router.get('/customers/:id', authenticate, authorize('ADMIN'), CustomerController.getById);
+router.get('/customers', authenticate, authorize('ADMIN', 'WAREHOUSE', 'TECHNICIAN'), CustomerController.getAll);
+router.get('/customers/:id', authenticate, authorize('ADMIN', 'WAREHOUSE', 'TECHNICIAN'), CustomerController.getById);
 router.post('/customers', authenticate, authorize('ADMIN'), CustomerController.create);
 router.put('/customers/:id', authenticate, authorize('ADMIN'), CustomerController.update);
 router.post('/customers/:id/addresses', authenticate, CustomerController.addAddress);
