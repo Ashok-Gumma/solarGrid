@@ -9,7 +9,12 @@ export class InstallationController {
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
       const status = req.query.status as string;
       const technicianId = req.query.technicianId as string;
-      const customerId = req.query.customerId as string;
+      let customerId = req.query.customerId as string;
+
+      // STRICT ACCOUNT ISOLATION: Customers can ONLY view their own installations!
+      if (req.user && req.user.role === 'CUSTOMER') {
+        customerId = req.user.userId;
+      }
 
       const result = InstallationService.getAll({ page, limit, status, technicianId, customerId });
       res.json({ success: true, data: result.data, installations: result.data, pagination: result.pagination });

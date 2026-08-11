@@ -69,8 +69,8 @@ router.post('/orders/:id/return', authenticate, OrderController.requestReturn);
 router.post('/orders/:id/approve-return', authenticate, authorize('ADMIN', 'WAREHOUSE'), OrderController.approveReturn);
 
 // --- INSTALLATIONS ---
-router.get('/installations', authenticate, authorize('ADMIN', 'TECHNICIAN'), InstallationController.getAll);
-router.get('/installations/:id', authenticate, authorize('ADMIN', 'TECHNICIAN'), InstallationController.getById);
+router.get('/installations', authenticate, authorize('ADMIN', 'TECHNICIAN', 'CUSTOMER'), InstallationController.getAll);
+router.get('/installations/:id', authenticate, authorize('ADMIN', 'TECHNICIAN', 'CUSTOMER'), InstallationController.getById);
 router.post('/installations', authenticate, InstallationController.create);
 router.post('/installations/:id/assign', authenticate, authorize('ADMIN'), InstallationController.assign);
 router.post('/installations/:id/status', authenticate, authorize('ADMIN', 'TECHNICIAN'), InstallationController.updateStatus);
@@ -116,7 +116,7 @@ router.post('/notifications/:id/read', authenticate, (req: AuthenticatedRequest,
 
 // --- CRM & AUDIT LOGS ---
 router.post('/crm/followups', authenticate, authorize('ADMIN'), CrmController.createFollowUp);
-router.get('/audit-logs', authenticate, authorize('ADMIN', 'WAREHOUSE'), (req, res) => {
+router.get('/audit-logs', authenticate, authorize('ADMIN'), (req, res) => {
   const logs = db.get('auditLogs');
   res.json({ success: true, data: logs });
 });

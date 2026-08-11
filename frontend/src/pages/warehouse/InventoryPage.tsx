@@ -104,9 +104,7 @@ const solarProductPresets = [
 ];
 
 export function InventoryPage() {
-  const [, setLocation] = useLocation();
   const [products, setProducts] = useState<Product[]>([]);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Stock Adjustment Modal State
@@ -125,7 +123,7 @@ export function InventoryPage() {
   const [unitPrice, setUnitPrice] = useState(18000);
   const [currentStock, setCurrentStock] = useState(50);
   const [minStockAlert, setMinStockAlert] = useState(10);
-  const [location, setLocationState] = useState('Warehouse Bay A');
+  const [location, setLocation] = useState('Warehouse Bay A');
   const [installationEligible, setInstallationEligible] = useState(true);
   const [warrantyMonths, setWarrantyMonths] = useState(300);
   const [description, setDescription] = useState('');
@@ -137,19 +135,11 @@ export function InventoryPage() {
 
   async function loadInventory() {
     setLoading(true);
-    const [invRes, logRes] = await Promise.all([
-      fetchApi<any>('/inventory'),
-      fetchApi<AuditLog[]>('/audit-logs'),
-    ]);
-
-    if (invRes.success && invRes.data && invRes.data.products) {
-      setProducts(invRes.data.products);
+    const res = await fetchApi<any>('/inventory');
+    if (res.success && res.data && res.data.products) {
+      setProducts(res.data.products);
     } else {
       setProducts([]);
-    }
-
-    if (logRes.success && logRes.data) {
-      setAuditLogs(logRes.data.slice(0, 8));
     }
     setLoading(false);
   }
@@ -165,7 +155,7 @@ export function InventoryPage() {
       setUnitPrice(preset.unitPrice);
       setCurrentStock(preset.currentStock);
       setMinStockAlert(preset.minStockAlert);
-      setLocationState(preset.location);
+      setLocation(preset.location);
       setInstallationEligible(preset.installationEligible);
       setWarrantyMonths(preset.warrantyMonths);
       setDescription(preset.description);
@@ -347,46 +337,6 @@ export function InventoryPage() {
           </table>
         </div>
       )}
-
-      {/* Audit Activity Stream (Same as Admin Desk) */}
-      <section className="surface p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
-            <Activity size={17} className="text-emerald-600" />
-            <span>Recent Warehouse & Product Audit Stream</span>
-          </div>
-          <button
-            onClick={() => setLocation('/audit-logs')}
-            className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition"
-          >
-            View full log <ArrowRight size={13} />
-          </button>
-        </div>
-
-        <div className="space-y-2">
-          {loading ? (
-            <>
-              <div className="skeleton h-10" />
-              <div className="skeleton h-10" />
-              <div className="skeleton h-10" />
-            </>
-          ) : auditLogs.length === 0 ? (
-            <p className="text-xs text-slate-400 py-4 text-center">No recent audit activity.</p>
-          ) : (
-            auditLogs.map((log) => (
-              <div key={log.id} className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50/60 px-4 py-3 text-xs">
-                <div>
-                  <span className="font-bold text-slate-900">{log.action}</span>
-                  <span className="ml-2 text-slate-400">by {log.userName || 'System User'}</span>
-                </div>
-                <span className="mono text-[10px] text-slate-400">
-                  {new Date(log.createdAt).toLocaleTimeString()}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-      </section>
 
       {/* Add New Product Modal */}
       {showAddProductModal && (
