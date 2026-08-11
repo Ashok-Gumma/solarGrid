@@ -302,25 +302,31 @@ export function ProductCatalogPage({
                     <b className="text-lg font-extrabold text-slate-900">₹{p.unitPrice.toLocaleString('en-IN')}</b>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={(e) => handleAddFromCard(e, p)}
-                    className={`inline-flex items-center gap-1.5 rounded-2xl px-4 py-2 text-xs font-bold transition cursor-pointer ${
-                      addedId === p.id
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-slate-900 text-white hover:bg-slate-800'
-                    }`}
-                  >
-                    {addedId === p.id ? (
-                      <>
-                        <Check size={14} /> Added
-                      </>
-                    ) : (
-                      <>
-                        <Plus size={14} /> Add to Cart
-                      </>
-                    )}
-                  </button>
+                  {p.currentStock <= 0 ? (
+                    <span className="rounded-2xl bg-red-100 px-3.5 py-2 text-xs font-bold text-red-700">
+                      Out of Stock
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={(e) => handleAddFromCard(e, p)}
+                      className={`inline-flex items-center gap-1.5 rounded-2xl px-4 py-2 text-xs font-bold transition cursor-pointer ${
+                        addedId === p.id
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-slate-900 text-white hover:bg-slate-800'
+                      }`}
+                    >
+                      {addedId === p.id ? (
+                        <>
+                          <Check size={14} /> Added
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={14} /> Add to Cart
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </article>
             );

@@ -208,8 +208,8 @@ export function ProductDetailPage({
               <span className="text-3xl font-extrabold text-slate-900">
                 ₹{product.unitPrice.toLocaleString('en-IN')}
               </span>
-              <span className="badge badge-slate">
-                In Stock ({product.currentStock} Units Available)
+              <span className={`badge ${product.currentStock > 0 ? 'badge-slate' : 'bg-red-100 text-red-700 font-bold border-red-200'}`}>
+                {product.currentStock > 0 ? `In Stock (${product.currentStock} Units Available)` : 'Out of Stock (Currently Unavailable)'}
               </span>
             </div>
 
@@ -233,49 +233,60 @@ export function ProductDetailPage({
 
             {/* Quantity & Cart Actions */}
             <div className="space-y-4 pt-4 border-t border-slate-100">
-              <div className="flex items-center gap-4">
-                <span className="text-xs font-bold text-slate-700">Select Quantity:</span>
-                <div className="flex items-center rounded-2xl border border-slate-200 bg-slate-50 p-1">
-                  <button
-                    type="button"
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="h-8 w-8 rounded-xl bg-white text-slate-700 font-bold hover:bg-slate-100 cursor-pointer shadow-xs"
-                  >
-                    -
-                  </button>
-                  <span className="w-10 text-center text-xs font-bold text-slate-900">{quantity}</span>
-                  <button
-                    type="button"
-                    onClick={() => setQuantity((q) => q + 1)}
-                    className="h-8 w-8 rounded-xl bg-white text-slate-700 font-bold hover:bg-slate-100 cursor-pointer shadow-xs"
-                  >
-                    +
-                  </button>
+              {product.currentStock > 0 ? (
+                <>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs font-bold text-slate-700">Select Quantity:</span>
+                    <div className="flex items-center rounded-2xl border border-slate-200 bg-slate-50 p-1">
+                      <button
+                        type="button"
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        className="h-8 w-8 rounded-xl bg-white text-slate-700 font-bold hover:bg-slate-100 cursor-pointer shadow-xs"
+                      >
+                        -
+                      </button>
+                      <span className="w-10 text-center text-xs font-bold text-slate-900">{quantity}</span>
+                      <button
+                        type="button"
+                        onClick={() => setQuantity((q) => Math.min(product.currentStock, q + 1))}
+                        className="h-8 w-8 rounded-xl bg-white text-slate-700 font-bold hover:bg-slate-100 cursor-pointer shadow-xs"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={handleAddToCart}
+                      className="btn-primary flex-1 py-3.5"
+                    >
+                      {added ? <Check size={16} /> : <ShoppingCart size={16} />}
+                      <span>{added ? 'Added to Cart!' : `Add ${quantity} to Cart`}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={toggleWishlist}
+                      className={`grid h-12 w-12 place-items-center rounded-full border transition cursor-pointer ${
+                        isWishlisted
+                          ? 'border-red-200 bg-red-50 text-red-500'
+                          : 'border-slate-200 bg-white text-slate-400 hover:text-red-500'
+                      }`}
+                    >
+                      <Heart size={18} fill={isWishlisted ? 'currentColor' : 'none'} />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-2xl bg-red-50 p-4 border border-red-200 space-y-2">
+                  <b className="block text-xs font-bold text-red-800">Item Currently Unavailable</b>
+                  <p className="text-[11px] text-red-600">
+                    This equipment is out of stock in the warehouse. Restock is expected soon.
+                  </p>
                 </div>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  className="btn-primary flex-1 py-3.5"
-                >
-                  {added ? <Check size={16} /> : <ShoppingCart size={16} />}
-                  <span>{added ? 'Added to Cart!' : `Add ${quantity} to Cart`}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={toggleWishlist}
-                  className={`grid h-12 w-12 place-items-center rounded-full border transition cursor-pointer ${
-                    isWishlisted
-                      ? 'border-red-200 bg-red-50 text-red-500'
-                      : 'border-slate-200 bg-white text-slate-400 hover:text-red-500'
-                  }`}
-                >
-                  <Heart size={18} fill={isWishlisted ? 'currentColor' : 'none'} />
-                </button>
-              </div>
+              )}
             </div>
           </div>
         </div>
