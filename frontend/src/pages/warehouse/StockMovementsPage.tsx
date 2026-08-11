@@ -9,8 +9,12 @@ export function StockMovementsPage() {
 
   useEffect(() => {
     async function load() {
-      const res = await fetchApi<StockMovement[]>('/stock-movements?limit=100');
-      if (res.success && res.data) setMovements(res.data);
+      const res = await fetchApi<any>('/stock-movements?limit=100');
+      if (res.success && res.data) {
+        // Support both direct array and paginated { data: [...] } structure
+        const list = Array.isArray(res.data) ? res.data : res.data.data;
+        setMovements(list || []);
+      }
       setLoading(false);
     }
     load();
@@ -28,6 +32,11 @@ export function StockMovementsPage() {
           <div className="skeleton h-16" />
           <div className="skeleton h-16" />
           <div className="skeleton h-16" />
+        </div>
+      ) : movements.length === 0 ? (
+        <div className="surface p-12 text-center text-slate-400">
+          <p className="font-semibold text-slate-600">No stock movements recorded yet.</p>
+          <p className="text-xs mt-1">Movements will appear here when inventory is added, adjusted, or dispatched via Sales Challans.</p>
         </div>
       ) : (
         <div className="surface p-6 overflow-x-auto">
