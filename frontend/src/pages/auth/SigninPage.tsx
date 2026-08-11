@@ -22,8 +22,8 @@ export function SigninPage() {
 
   const handleTabClick = (p: typeof rolePortals[0]) => {
     setActiveTab(p.role);
-    if (p.role !== 'CUSTOMER') { setEmail(p.emailHint); setPassword('password123'); }
-    else { setEmail(''); setPassword(''); }
+    setEmail(p.emailHint);
+    setPassword('password123');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
