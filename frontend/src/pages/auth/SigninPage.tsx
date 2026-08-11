@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { ArrowRight, Lock, Mail, ShieldCheck, HardHat, Box, ShoppingBag, Sun, User } from 'lucide-react';
+import { ArrowRight, Lock, Mail, ShieldCheck, HardHat, Box, ShoppingBag, Sun } from 'lucide-react';
 import { useAuth, Role } from '../../lib/auth-context';
 
 export function SigninPage() {
@@ -24,12 +24,6 @@ export function SigninPage() {
     setActiveTab(p.role);
     if (p.role !== 'CUSTOMER') { setEmail(p.emailHint); setPassword('password123'); }
     else { setEmail(''); setPassword(''); }
-  };
-
-  const handleFillDefaultUser = () => {
-    setActiveTab('CUSTOMER');
-    setEmail('user@gmail.com');
-    setPassword('user@123');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -97,26 +91,6 @@ export function SigninPage() {
                 );
               })}
             </div>
-
-            {/* Quick Fill Default Customer Banner */}
-            {activeTab === 'CUSTOMER' && (
-              <div className="mt-3 flex items-center justify-between bg-emerald-50/90 border border-emerald-200/80 rounded-2xl p-3 text-xs">
-                <div className="flex items-center gap-2">
-                  <User size={16} className="text-emerald-600 shrink-0" />
-                  <div>
-                    <span className="font-bold text-slate-800 block text-[12px]">Default Customer Account</span>
-                    <span className="text-[11px] text-slate-500 font-mono">user@gmail.com</span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleFillDefaultUser}
-                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-sm cursor-pointer shrink-0"
-                >
-                  Default User
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Error */}
@@ -129,18 +103,7 @@ export function SigninPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-bold text-slate-600">Email address</label>
-                {activeTab !== 'CUSTOMER' && (
-                  <button
-                    type="button"
-                    onClick={handleFillDefaultUser}
-                    className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-lg transition cursor-pointer"
-                  >
-                    Default User
-                  </button>
-                )}
-              </div>
+              <label className="block text-xs font-bold text-slate-600 mb-2">Email address</label>
               <div className="relative">
                 <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
