@@ -129,19 +129,34 @@ export function InventoryPage() {
   const [description, setDescription] = useState('');
   const [savingProduct, setSavingProduct] = useState(false);
 
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   useEffect(() => {
     loadInventory();
   }, []);
 
   async function loadInventory() {
     setLoading(true);
-    const res = await fetchApi<any>('/inventory');
-    if (res.success && res.data && res.data.products) {
-      setProducts(res.data.products);
-    } else {
-      setProducts([]);
+    setErrorMsg(null);
+    try {
+      const res = await fetchApi<any>('/inventory');
+      if (res.success && res.data && Array.isArray(res.data.products)) {
+        setProducts(res.data.products);
+      } else {
+        // Fallback to public products endpoint
+        const prodRes = await fetchApi<any>('/products');
+        const prodList = prodRes?.data || (Array.isArray(prodRes) ? prodRes : []);
+        setProducts(Array.isArray(prodList) ? prodList : []);
+        if (res && !res.success && res.message) {
+          setErrorMsg(res.message);
+        }
+      }
+    } catch (err: any) {
+      console.error('Error loading inventory data:', err);
+      setErrorMsg(err.message || 'Failed to load inventory data.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   const handleSelectPreset = (indexStr: string) => {

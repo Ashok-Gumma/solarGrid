@@ -9,13 +9,20 @@ export function StockMovementsPage() {
 
   useEffect(() => {
     async function load() {
-      const res = await fetchApi<any>('/stock-movements?limit=100');
-      if (res.success && res.data) {
-        // Support both direct array and paginated { data: [...] } structure
-        const list = Array.isArray(res.data) ? res.data : res.data.data;
-        setMovements(list || []);
+      try {
+        const res = await fetchApi<any>('/stock-movements?limit=100');
+        if (res.success && res.data) {
+          const list = Array.isArray(res.data) ? res.data : res.data.data;
+          setMovements(list || []);
+        } else {
+          setMovements([]);
+        }
+      } catch (err) {
+        console.error('Error loading stock movements:', err);
+        setMovements([]);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     load();
   }, []);

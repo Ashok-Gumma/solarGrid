@@ -33,7 +33,7 @@ router.post('/products', authenticate, authorize('ADMIN', 'WAREHOUSE'), ProductC
 router.put('/products/:id', authenticate, authorize('ADMIN', 'WAREHOUSE'), ProductController.update);
 
 // --- INVENTORY & STOCK MOVEMENTS ---
-router.get('/inventory', authenticate, authorize('ADMIN', 'WAREHOUSE'), (req, res, next) => {
+router.get('/inventory', authenticate, authorize('ADMIN', 'WAREHOUSE', 'TECHNICIAN'), (req, res, next) => {
   try {
     const products = db.get('products');
     const lowStockCount = products.filter((p) => p.currentStock <= p.minStockAlert).length;
@@ -49,7 +49,7 @@ router.get('/inventory', authenticate, authorize('ADMIN', 'WAREHOUSE'), (req, re
     next(err);
   }
 });
-router.get('/stock-movements', authenticate, authorize('ADMIN', 'WAREHOUSE'), InventoryController.getMovements);
+router.get('/stock-movements', authenticate, authorize('ADMIN', 'WAREHOUSE', 'TECHNICIAN'), InventoryController.getMovements);
 router.post('/stock-movements', authenticate, authorize('ADMIN', 'WAREHOUSE'), InventoryController.adjust);
 
 // --- SALES CHALLANS ---
