@@ -320,15 +320,32 @@ export function InventoryPage() {
                     <td className="py-3 px-2 text-slate-400">{p.minStockAlert} units</td>
                     <td className="py-3 px-2 text-slate-500 font-medium text-[11px]">{createdTimeStr}</td>
                     <td className="py-3 px-2 text-right">
-                      <button
-                        onClick={() => {
-                          setSelectedProduct(p);
-                          setShowAdjustModal(true);
-                        }}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 font-bold text-emerald-700 hover:bg-emerald-50 cursor-pointer shadow-2xs"
-                      >
-                        Adjust Stock
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => {
+                            setSelectedProduct(p);
+                            setMovementType('IN');
+                            setQuantity(1);
+                            setReason('Supplier Restock');
+                            setShowAdjustModal(true);
+                          }}
+                          className="rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 font-bold text-emerald-800 hover:bg-emerald-100 cursor-pointer shadow-2xs text-[11px]"
+                        >
+                          + Stock IN
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedProduct(p);
+                            setMovementType('OUT');
+                            setQuantity(p.currentStock > 0 ? p.currentStock : 1);
+                            setReason(p.currentStock > 0 ? 'Clear Out Stock / Dispatched' : 'Damage Write-off');
+                            setShowAdjustModal(true);
+                          }}
+                          className="rounded-xl border border-red-200 bg-red-50 px-2.5 py-1.5 font-bold text-red-700 hover:bg-red-100 cursor-pointer shadow-2xs text-[11px]"
+                        >
+                          - Stock OUT
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -519,23 +536,38 @@ export function InventoryPage() {
             </h3>
 
             <form onSubmit={handleAdjustStock} className="space-y-3">
+              <div className="rounded-xl bg-slate-50 p-3 border border-slate-200 flex justify-between items-center">
+                <span className="font-semibold text-slate-600">Current Warehouse Stock:</span>
+                <span className={`font-bold text-sm ${selectedProduct.currentStock > 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                  {selectedProduct.currentStock} units
+                </span>
+              </div>
+
               <div>
                 <label className="block font-bold uppercase text-slate-400 mb-1">Adjustment Type</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => setMovementType('IN')}
-                    className={`rounded-xl p-2.5 font-bold border text-center ${
-                      movementType === 'IN' ? 'border-[#6f9841] bg-[#e7efcf] text-slate-900' : 'border-slate-200'
+                    onClick={() => {
+                      setMovementType('IN');
+                      if (quantity > 100) setQuantity(5);
+                    }}
+                    className={`rounded-xl p-2.5 font-bold border text-center transition-all ${
+                      movementType === 'IN' ? 'border-[#6f9841] bg-[#e7efcf] text-slate-900 shadow-xs' : 'border-slate-200 text-slate-500'
                     }`}
                   >
                     + Stock IN (Restock)
                   </button>
                   <button
                     type="button"
-                    onClick={() => setMovementType('OUT')}
-                    className={`rounded-xl p-2.5 font-bold border text-center ${
-                      movementType === 'OUT' ? 'border-[#a63e3e] bg-red-100 text-[#a63e3e]' : 'border-slate-200'
+                    onClick={() => {
+                      setMovementType('OUT');
+                      if (selectedProduct.currentStock > 0) {
+                        setQuantity(selectedProduct.currentStock);
+                      }
+                    }}
+                    className={`rounded-xl p-2.5 font-bold border text-center transition-all ${
+                      movementType === 'OUT' ? 'border-[#a63e3e] bg-red-100 text-[#a63e3e] shadow-xs' : 'border-slate-200 text-slate-500'
                     }`}
                   >
                     - Stock OUT (Removal)
@@ -544,14 +576,31 @@ export function InventoryPage() {
               </div>
 
               <div>
-                <label className="block font-bold uppercase text-slate-400 mb-1">Quantity</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block font-bold uppercase text-slate-400">Quantity</label>
+                  {movementType === 'OUT' && selectedProduct.currentStock > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(selectedProduct.currentStock)}
+                      className="text-[10px] font-bold text-red-600 underline hover:text-red-800"
+                    >
+                      Clear All ({selectedProduct.currentStock} units out to 0)
+                    </button>
+                  )}
+                </div>
                 <input
                   type="number"
                   min="1"
+                  max={movementType === 'OUT' ? selectedProduct.currentStock || 1 : undefined}
                   value={quantity}
                   onChange={(e) => setQuantity(Number(e.target.value))}
-                  className="w-full rounded-xl border border-slate-200 p-2.5 outline-none"
+                  className="w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-slate-900"
                 />
+                {movementType === 'OUT' && quantity === selectedProduct.currentStock && (
+                  <p className="text-[10px] text-amber-700 mt-1 font-semibold">
+                    ⚠️ This action will set current stock to 0 units (Product no longer available).
+                  </p>
+                )}
               </div>
 
               <div>
@@ -560,8 +609,8 @@ export function InventoryPage() {
                   type="text"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="e.g. Supplier delivery, Damage write-off..."
-                  className="w-full rounded-xl border border-slate-200 p-2.5 outline-none"
+                  placeholder="e.g. Supplier delivery, Dispatched, Damage write-off..."
+                  className="w-full rounded-xl border border-slate-200 p-2.5 outline-none focus:border-slate-900"
                 />
               </div>
 
