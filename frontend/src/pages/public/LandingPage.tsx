@@ -210,20 +210,20 @@ export function LandingPage() {
 
       <main className="mx-auto max-w-7xl px-4 md:px-8 pt-6 space-y-6">
 
-        {/* Minimal Hero Featuring User-Provided Authentic Rural Indian Woman Holding Solar Module */}
-        <div className="bento-card p-8 md:p-12 bg-white grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border border-black/5 overflow-hidden">
+        {/* Hero Section featuring 2x2 Photo Grid of Authentic Rural Indian Solar Projects */}
+        <div className="bento-card p-6 md:p-10 bg-white grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border border-black/5 overflow-hidden">
           
-          <div className="lg:col-span-6 space-y-6">
+          <div className="lg:col-span-5 space-y-6">
             <span className="bento-pill px-4 py-2 text-xs font-bold text-amber-900 bg-amber-50 inline-flex items-center gap-2 border border-amber-200">
               <Sparkles size={14} className="text-amber-600" /> Authentic Rural India Transformation
             </span>
 
-            <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
               <strong>Real Hope.</strong> <strong>Real Light.</strong> <br />
               <span className="font-light text-slate-700">Powered by <strong className="font-extrabold text-slate-900">SolarGrid ERP.</strong></span>
             </h1>
 
-            <p className="text-base text-slate-600 font-medium leading-relaxed max-w-lg">
+            <p className="text-sm md:text-base text-slate-600 font-medium leading-relaxed">
               <strong className="text-slate-800">Simplifying</strong> solar distribution for{' '}
               <strong className="text-slate-800">rural homes</strong>,{' '}
               <strong className="text-slate-800">village kitchens</strong>, and{' '}
@@ -231,7 +231,7 @@ export function LandingPage() {
               <strong className="text-slate-800">developing India</strong>.
             </p>
 
-            <div className="flex flex-wrap items-center gap-4 pt-2">
+            <div className="flex flex-wrap items-center gap-4 pt-1">
               <Link
                 href="/signup"
                 className="rounded-full bg-slate-900 px-7 py-3.5 text-xs font-bold text-white hover:bg-black transition shadow-md flex items-center gap-2"
@@ -239,29 +239,72 @@ export function LandingPage() {
                 <span>Launch ERP Desk</span>
                 <ArrowRight size={16} />
               </Link>
-
             </div>
           </div>
 
-          {/* User's Exact Uploaded Image 1: Rural Woman with Solar Panel in Front of Mud Hut */}
-          <div className="lg:col-span-6 relative h-[420px] md:h-[480px] w-full rounded-[2rem] overflow-hidden shadow-xl group border border-slate-200">
-            <img
-              src="/user_woman_solar_hut.jpg"
-              alt="Rural Indian woman smiling while holding a solar panel outside her village home"
-              className="w-full h-full object-cover object-center group-hover:scale-103 transition duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent flex flex-col justify-end p-8 text-white space-y-2">
-              <span className="bento-pill px-3.5 py-1 text-[11px] font-bold text-amber-900 bg-amber-400 self-start uppercase tracking-wider">
-                Pure Innocence &amp; Joy
-              </span>
-              <h3 className="text-2xl font-bold text-white tracking-tight leading-snug">
-                &ldquo;<strong>Solar lighting</strong> changed our{' '}
-                <strong>lives</strong> in the village.&rdquo;
-              </h3>
-              <p className="text-xs text-slate-300 font-medium">
-                — <em>Authentic rural beneficiary</em> &bull; PM Surya Ghar Muft Bijli Yojana
-              </p>
+          {/* 2x2 Photo Grid with Smaller Image Cards */}
+          <div className="lg:col-span-7 grid grid-cols-2 gap-3.5 sm:gap-4">
+            
+            {/* Photo 1: Rural Woman with Solar Panel */}
+            <div className="relative h-44 sm:h-52 w-full rounded-2xl overflow-hidden shadow-md group border border-slate-200">
+              <img
+                src={RURAL_WOMAN_SOLAR_HUT}
+                alt="Rural Indian woman smiling with solar panel"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent flex flex-col justify-end p-3.5 text-white">
+                <span className="text-[10px] font-extrabold text-amber-300 uppercase tracking-wider">
+                  RURAL HOME LIGHTING
+                </span>
+                <h4 className="text-xs font-bold text-white leading-tight">PM Surya Ghar Beneficiary</h4>
+              </div>
             </div>
+
+            {/* Photo 2: Agricultural Solar Pump Array */}
+            <div className="relative h-44 sm:h-52 w-full rounded-2xl overflow-hidden shadow-md group border border-slate-200">
+              <img
+                src={WOMEN_FARM_SOLAR}
+                alt="Rural Indian women walking past solar powered pump"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent flex flex-col justify-end p-3.5 text-white">
+                <span className="text-[10px] font-extrabold text-emerald-300 uppercase tracking-wider">
+                  AGRICULTURAL PUMPS
+                </span>
+                <h4 className="text-xs font-bold text-white leading-tight">PM-KUSUM Irrigation</h4>
+              </div>
+            </div>
+
+            {/* Photo 3: Farmers Harvest Solar Canopy */}
+            <div className="relative h-44 sm:h-52 w-full rounded-2xl overflow-hidden shadow-md group border border-slate-200">
+              <img
+                src={FARMERS_HARVEST_SOLAR}
+                alt="Indian farmers harvesting under solar panel array"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent flex flex-col justify-end p-3.5 text-white">
+                <span className="text-[10px] font-extrabold text-blue-300 uppercase tracking-wider">
+                  AGRIVOLTAIC FARMLANDS
+                </span>
+                <h4 className="text-xs font-bold text-white leading-tight">Dual Crop &amp; Solar Income</h4>
+              </div>
+            </div>
+
+            {/* Photo 4: Village Solar Cooking */}
+            <div className="relative h-44 sm:h-52 w-full rounded-2xl overflow-hidden shadow-md group border border-slate-200">
+              <img
+                src={SOLAR_COOKING_VILLAGE}
+                alt="Indian village solar powered cooktops"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent flex flex-col justify-end p-3.5 text-white">
+                <span className="text-[10px] font-extrabold text-amber-300 uppercase tracking-wider">
+                  CLEAN STOVES
+                </span>
+                <h4 className="text-xs font-bold text-white leading-tight">Smoke-Free Kitchens</h4>
+              </div>
+            </div>
+
           </div>
 
         </div>
