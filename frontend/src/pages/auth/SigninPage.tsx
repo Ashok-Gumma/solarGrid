@@ -33,8 +33,7 @@ export function SigninPage() {
     const loggedInUser = await login(email, password);
     if (loggedInUser) {
       const redirects: Record<Role, string> = {
-        ADMIN: '/admin', WAREHOUSE: '/inventory', TECHNICIAN: '/technician',
-        CUSTOMER: '/store', SALES: '/admin', ACCOUNTS: '/admin',
+        ADMIN: '/admin', WAREHOUSE: '/inventory', TECHNICIAN: '/technician', CUSTOMER: '/store',
       };
       setLocation(redirects[loggedInUser.role] || '/store');
     } else {
