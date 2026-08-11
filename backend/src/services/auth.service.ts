@@ -10,14 +10,14 @@ import { seedDatabase } from '../db/seed.js';
 export class AuthService {
   static async login(email: string, password?: string, roleOverride?: Role) {
     let users = db.get('users');
-    let user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
 
-    if (!user && ['user@gmail.com', 'admin@solargrid.com', 'warehouse@solargrid.com', 'tech@solargrid.com'].includes(email.toLowerCase())) {
-      console.log(`[AUTH] Seed user ${email} not found in memory, running seedDatabase...`);
+    if (!users || users.length === 0 || (!users.some((u) => u.email.toLowerCase() === email.toLowerCase()) && ['user@gmail.com', 'admin@solargrid.com', 'warehouse@solargrid.com', 'tech@solargrid.com'].includes(email.toLowerCase()))) {
+      console.log(`[AUTH] Initializing/re-seeding database for login request (${email})...`);
       await seedDatabase();
       users = db.get('users');
-      user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
     }
+
+    let user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
 
     if (!user) {
       throw new AppError('Invalid credentials.', 401);

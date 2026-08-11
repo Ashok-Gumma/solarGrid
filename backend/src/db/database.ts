@@ -101,12 +101,12 @@ class DatabaseEngine {
       const oRes = await this.pgPool.query('SELECT id, order_number as "orderNumber", customer_id as "customerId", customer_name as "customerName", address_id as "addressId", address_text as "addressText", installation_type as "installationType", total_amount::float as "totalAmount", status, created_at as "createdAt", updated_at as "updatedAt" FROM orders');
       const oiRes = await this.pgPool.query('SELECT id, order_id as "orderId", product_id as "productId", product_name as "productName", sku, unit_price::float as "unitPrice", quantity, installation_eligible as "installationEligible" FROM order_items');
 
-      this.data.users = uRes.rows;
-      this.data.customers = cRes.rows;
-      this.data.products = pRes.rows;
-      this.data.stockMovements = smRes.rows;
-      this.data.orders = oRes.rows;
-      this.data.orderItems = oiRes.rows;
+      if (uRes.rows && uRes.rows.length > 0) this.data.users = uRes.rows;
+      if (cRes.rows && cRes.rows.length > 0) this.data.customers = cRes.rows;
+      if (pRes.rows && pRes.rows.length > 0) this.data.products = pRes.rows;
+      if (smRes.rows && smRes.rows.length > 0) this.data.stockMovements = smRes.rows;
+      if (oRes.rows && oRes.rows.length > 0) this.data.orders = oRes.rows;
+      if (oiRes.rows && oiRes.rows.length > 0) this.data.orderItems = oiRes.rows;
     } catch (err: any) {
       console.error('Error syncing from PostgreSQL:', err.message);
     }
