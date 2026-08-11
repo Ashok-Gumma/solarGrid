@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Route, Switch, Redirect } from 'wouter';
-import { AuthProvider, useAuth } from './lib/auth-context';
+import { AuthProvider, useAuth, Role } from './lib/auth-context';
 import { Sidebar } from './components/navigation/Sidebar';
 import { Topbar } from './components/navigation/Topbar';
 import { LandingPage } from './pages/public/LandingPage';
@@ -28,10 +28,44 @@ import { ProductDetailPage } from './pages/customer/ProductDetailPage';
 import { WishlistPage } from './pages/customer/WishlistPage';
 import { Product } from './types';
 
+function ProtectedRoute({
+  children,
+  allowedRoles,
+}: {
+  children: React.ReactNode;
+  allowedRoles?: Role[];
+}) {
+  const { user, role, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-900 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Redirect to="/login" />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(role)) {
+    const roleDefaultRoutes: Record<Role, string> = {
+      ADMIN: '/admin',
+      WAREHOUSE: '/inventory',
+      TECHNICIAN: '/technician',
+      CUSTOMER: '/store',
+    };
+    return <Redirect to={roleDefaultRoutes[role] || '/store'} />;
+  }
+
+  return <>{children}</>;
+}
+
 function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [cart, setCart] = useState<CartLine[]>([]);
-  const { role } = useAuth();
+  const { user, role } = useAuth();
 
   const handleAddToCart = (product: Product, quantity = 1) => {
     setCart((prev) => {
@@ -68,84 +102,95 @@ function MainLayout() {
         <Topbar onMenuOpen={() => setSidebarOpen(true)} cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} />
         <main className="mx-auto max-w-[1440px] px-4 py-6 md:px-8 md:py-8">
           <Switch>
-            {/* Admin & Management */}
-            <Route path="/admin">
-              {() => (role === 'ADMIN' ? <OverviewPage /> : <Redirect to={role === 'WAREHOUSE' ? '/inventory' : role === 'TECHNICIAN' ? '/technician' : '/store'} />)}
-            </Route>
-            <Route path="/audit-logs">
-              {() => (role === 'ADMIN' ? <AuditLogsPage /> : <Redirect to={role === 'WAREHOUSE' ? '/inventory' : role === 'TECHNICIAN' ? '/technician' : '/store'} />)}
-            </Route>
-
-            {/* Customers & CRM */}
-            <Route path="/customers">
-              {() => (role === 'ADMIN' ? <CustomersPage /> : <Redirect to={role === 'WAREHOUSE' ? '/inventory' : role === 'TECHNICIAN' ? '/technician' : '/store'} />)}
-            </Route>
-            <Route path="/customers/:id">
-              {() => (role === 'ADMIN' ? <CustomerDetailPage /> : <Redirect to={role === 'WAREHOUSE' ? '/inventory' : role === 'TECHNICIAN' ? '/technician' : '/store'} />)}
-            </Route>
-            <Route path="/crm">
-              {() => (role === 'ADMIN' ? <CustomersPage /> : <Redirect to={role === 'WAREHOUSE' ? '/inventory' : role === 'TECHNICIAN' ? '/technician' : '/store'} />)}
-            </Route>
-
-            {/* Product & Store */}
+            {/* Public Catalog Routes */}
             <Route path="/store">
-              {() => (role === 'CUSTOMER' ? <ProductCatalogPage onAddToCart={handleAddToCart} cartCount={cart.length} /> : <Redirect to={role === 'ADMIN' ? '/admin' : role === 'WAREHOUSE' ? '/inventory' : '/technician'} />)}
+              {() => <ProductCatalogPage onAddToCart={handleAddToCart} cartCount={cart.length} />}
             </Route>
             <Route path="/products">
-              {() => (role === 'CUSTOMER' ? <ProductCatalogPage onAddToCart={handleAddToCart} cartCount={cart.length} /> : <Redirect to={role === 'ADMIN' ? '/admin' : role === 'WAREHOUSE' ? '/inventory' : '/technician'} />)}
+              {() => <ProductCatalogPage onAddToCart={handleAddToCart} cartCount={cart.length} />}
             </Route>
             <Route path="/products/:id">
               {() => <ProductDetailPage onAddToCart={handleAddToCart} />}
             </Route>
-            <Route path="/wishlist">
-              {() => (role === 'CUSTOMER' || role === 'ADMIN' ? <WishlistPage onAddToCart={handleAddToCart} /> : <Redirect to={role === 'WAREHOUSE' ? '/inventory' : '/technician'} />)}
+
+            {/* Admin & Management */}
+            <Route path="/admin">
+              {() => <ProtectedRoute allowedRoles={['ADMIN']}><OverviewPage /></ProtectedRoute>}
+            </Route>
+            <Route path="/audit-logs">
+              {() => <ProtectedRoute allowedRoles={['ADMIN']}><AuditLogsPage /></ProtectedRoute>}
             </Route>
 
-            {/* Cart & Checkout */}
+            {/* Customers & CRM */}
+            <Route path="/customers">
+              {() => <ProtectedRoute allowedRoles={['ADMIN']}><CustomersPage /></ProtectedRoute>}
+            </Route>
+            <Route path="/customers/:id">
+              {() => <ProtectedRoute allowedRoles={['ADMIN']}><CustomerDetailPage /></ProtectedRoute>}
+            </Route>
+            <Route path="/crm">
+              {() => <ProtectedRoute allowedRoles={['ADMIN']}><CustomersPage /></ProtectedRoute>}
+            </Route>
+
+            {/* Customer Store Actions & Services */}
+            <Route path="/wishlist">
+              {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN']}><WishlistPage onAddToCart={handleAddToCart} /></ProtectedRoute>}
+            </Route>
             <Route path="/cart">
-              {() => (role === 'CUSTOMER' || role === 'ADMIN' ? <CartPage cart={cart} onUpdateQty={handleUpdateCartQty} onRemove={handleRemoveFromCart} /> : <Redirect to={role === 'WAREHOUSE' ? '/inventory' : '/technician'} />)}
+              {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN']}><CartPage cart={cart} onUpdateQty={handleUpdateCartQty} onRemove={handleRemoveFromCart} /></ProtectedRoute>}
             </Route>
             <Route path="/checkout">
-              {() => (role === 'CUSTOMER' || role === 'ADMIN' ? <CheckoutPage cart={cart} onClearCart={() => setCart([])} /> : <Redirect to={role === 'WAREHOUSE' ? '/inventory' : '/technician'} />)}
+              {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN']}><CheckoutPage cart={cart} onClearCart={() => setCart([])} /></ProtectedRoute>}
             </Route>
-
-            {/* Customer Self-Service & Profile */}
-            <Route path="/my-orders" component={MyOrdersPage} />
-            <Route path="/my-warranties" component={MyWarrantiesPage} />
-            <Route path="/book-service" component={BookServicePage} />
-            <Route path="/profile" component={ProfilePage} />
-            <Route path="/my-profile" component={ProfilePage} />
+            <Route path="/my-orders">
+              {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN']}><MyOrdersPage /></ProtectedRoute>}
+            </Route>
+            <Route path="/my-warranties">
+              {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN']}><MyWarrantiesPage /></ProtectedRoute>}
+            </Route>
+            <Route path="/book-service">
+              {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN']}><BookServicePage /></ProtectedRoute>}
+            </Route>
+            <Route path="/profile">
+              {() => <ProtectedRoute><ProfilePage /></ProtectedRoute>}
+            </Route>
+            <Route path="/my-profile">
+              {() => <ProtectedRoute><ProfilePage /></ProtectedRoute>}
+            </Route>
 
             {/* Warehouse Operations */}
             <Route path="/inventory">
-              {() => (role === 'ADMIN' || role === 'WAREHOUSE' ? <InventoryPage /> : <Redirect to={role === 'TECHNICIAN' ? '/technician' : '/store'} />)}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'WAREHOUSE']}><InventoryPage /></ProtectedRoute>}
             </Route>
             <Route path="/stock-movements">
-              {() => (role === 'ADMIN' || role === 'WAREHOUSE' ? <StockMovementsPage /> : <Redirect to={role === 'TECHNICIAN' ? '/technician' : '/store'} />)}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'WAREHOUSE']}><StockMovementsPage /></ProtectedRoute>}
             </Route>
 
             {/* Sales Challans & Orders */}
             <Route path="/challans">
-              {() => (role === 'ADMIN' || role === 'WAREHOUSE' ? <ChallansPage /> : <Redirect to={role === 'TECHNICIAN' ? '/technician' : '/store'} />)}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'WAREHOUSE']}><ChallansPage /></ProtectedRoute>}
             </Route>
             <Route path="/orders">
-              {() => (role === 'ADMIN' || role === 'WAREHOUSE' ? <AdminOrdersPage /> : <MyOrdersPage />)}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'WAREHOUSE']}><AdminOrdersPage /></ProtectedRoute>}
             </Route>
 
             {/* Technician Field Operations */}
             <Route path="/technician">
-              {() => (role === 'ADMIN' || role === 'TECHNICIAN' ? <TechnicianDashboard /> : <Redirect to={role === 'WAREHOUSE' ? '/inventory' : '/store'} />)}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'TECHNICIAN']}><TechnicianDashboard /></ProtectedRoute>}
             </Route>
             <Route path="/installations">
-              {() => (role === 'ADMIN' || role === 'TECHNICIAN' ? <InstallationsPage /> : <Redirect to={role === 'WAREHOUSE' ? '/inventory' : '/store'} />)}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'TECHNICIAN']}><InstallationsPage /></ProtectedRoute>}
             </Route>
             <Route path="/services">
-              {() => (role === 'ADMIN' || role === 'TECHNICIAN' ? <ServiceRepairPage /> : <Redirect to={role === 'WAREHOUSE' ? '/inventory' : '/store'} />)}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'TECHNICIAN']}><ServiceRepairPage /></ProtectedRoute>}
             </Route>
 
             {/* Default Catch-all */}
             <Route>
-              {() => <Redirect to={role === 'ADMIN' ? '/admin' : role === 'WAREHOUSE' ? '/inventory' : role === 'TECHNICIAN' ? '/technician' : '/store'} />}
+              {() => {
+                if (!user) return <Redirect to="/" />;
+                return <Redirect to={role === 'ADMIN' ? '/admin' : role === 'WAREHOUSE' ? '/inventory' : role === 'TECHNICIAN' ? '/technician' : '/store'} />;
+              }}
             </Route>
           </Switch>
         </main>

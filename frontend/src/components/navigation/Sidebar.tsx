@@ -83,7 +83,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
         {/* Workspace tag */}
         <div className="mx-2 mb-3 text-[9px] font-bold uppercase tracking-[.2em] text-slate-400">
-          {role} Workspace
+          {user ? `${role} Workspace` : 'Guest Browsing'}
         </div>
 
         {/* Nav */}
@@ -111,22 +111,36 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
         {/* Footer */}
         <div className="mt-auto border-t border-slate-100 pt-3 space-y-1">
-          <div className="flex items-center gap-2.5 px-3 py-2">
-            <span className="grid h-7 w-7 place-items-center rounded-lg bg-slate-900 text-[11px] font-bold text-white shrink-0">
-              {user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : 'U'}
-            </span>
-            <div className="min-w-0">
-              <span className="block text-xs font-bold text-slate-900 truncate">{user?.name || 'User'}</span>
-              <span className="block text-[10px] text-slate-400 truncate">{user?.email}</span>
+          {user ? (
+            <>
+              <div className="flex items-center gap-2.5 px-3 py-2">
+                <span className="grid h-7 w-7 place-items-center rounded-lg bg-slate-900 text-[11px] font-bold text-white shrink-0">
+                  {user.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : 'U'}
+                </span>
+                <div className="min-w-0">
+                  <span className="block text-xs font-bold text-slate-900 truncate">{user.name}</span>
+                  <span className="block text-[10px] text-slate-400 truncate">{user.email}</span>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition cursor-pointer"
+              >
+                <LogOut size={15} />
+                <span>Sign out</span>
+              </button>
+            </>
+          ) : (
+            <div className="p-2">
+              <Link
+                href="/login"
+                onClick={onClose}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white transition hover:bg-black"
+              >
+                Sign In / Register
+              </Link>
             </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition cursor-pointer"
-          >
-            <LogOut size={15} />
-            <span>Sign out</span>
-          </button>
+          )}
         </div>
       </aside>
     </>

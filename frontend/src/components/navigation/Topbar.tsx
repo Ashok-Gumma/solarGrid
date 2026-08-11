@@ -76,7 +76,7 @@ export function Topbar({ onMenuOpen, cartCount = 0 }: { onMenuOpen: () => void; 
           </div>
           <span>/</span>
           <span className="badge badge-slate uppercase tracking-wider text-[10px]">
-            {role} PORTAL
+            {user ? `${role} PORTAL` : 'GUEST PORTAL'}
           </span>
         </div>
       </div>
@@ -211,18 +211,29 @@ export function Topbar({ onMenuOpen, cartCount = 0 }: { onMenuOpen: () => void; 
           </button>
         )}
 
-        {/* User Profile */}
-        <div
-          onClick={() => setLocation('/profile')}
-          className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 cursor-pointer hover:bg-slate-50 transition"
-        >
-          <span className="grid h-6 w-6 place-items-center rounded-full bg-slate-900 text-[10px] font-bold text-white">
-            {user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : <User size={12} />}
-          </span>
-          <span className="hidden text-left text-xs md:block">
-            <b className="block text-slate-900 text-[11px] leading-tight">{user?.name || 'User'}</b>
-          </span>
-        </div>
+        {/* User Profile / Auth Button */}
+        {user ? (
+          <div
+            onClick={() => setLocation('/profile')}
+            className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 cursor-pointer hover:bg-slate-50 transition"
+          >
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-slate-900 text-[10px] font-bold text-white">
+              {user.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : <User size={12} />}
+            </span>
+            <span className="hidden text-left text-xs md:block">
+              <b className="block text-slate-900 text-[11px] leading-tight">{user.name}</b>
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setLocation('/login')}
+              className="rounded-full bg-slate-900 px-4 py-1.5 text-xs font-bold text-white hover:bg-black transition cursor-pointer"
+            >
+              Sign In
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

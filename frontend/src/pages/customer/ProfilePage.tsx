@@ -19,7 +19,7 @@ export function ProfilePage() {
   const [savingProfile, setSavingProfile] = useState(false);
 
   const [defaultAddress, setDefaultAddress] = useState<string>(() =>
-    localStorage.getItem(`solargrid_default_addr_${user?.id || 'guest'}`) || '17B, Palm Grove, Markapur, Andhra Pradesh 523316'
+    localStorage.getItem(`solargrid_default_addr_${user?.id || 'guest'}`) || ''
   );
   const [editingAddress, setEditingAddress] = useState(false);
   const [addressInput, setAddressInput] = useState(defaultAddress);
@@ -90,7 +90,7 @@ export function ProfilePage() {
 
   const infoItems = [
     { icon: Mail,       label: 'Email Address',      value: user?.email || 'N/A' },
-    { icon: Phone,      label: 'Contact Phone',       value: user?.phone || '+91 98765 43210' },
+    { icon: Phone,      label: 'Contact Phone',       value: user?.phone || 'Not provided' },
     { icon: UserCheck,  label: 'Account Tier',        value: user?.customerType || 'RETAIL CUSTOMER' },
   ];
 

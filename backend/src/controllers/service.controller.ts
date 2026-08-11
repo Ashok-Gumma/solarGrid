@@ -9,7 +9,11 @@ export class ServiceController {
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
       const status = req.query.status as string;
       const technicianId = req.query.technicianId as string;
-      const customerId = req.query.customerId as string;
+      let customerId = req.query.customerId as string;
+
+      if (req.user && req.user.role === 'CUSTOMER') {
+        customerId = req.user.userId;
+      }
 
       const result = ServiceJobService.getAll({ page, limit, status, technicianId, customerId });
       res.json({ success: true, data: result.data, services: result.data, pagination: result.pagination });
