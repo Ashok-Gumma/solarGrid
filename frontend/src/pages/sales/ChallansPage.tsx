@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FileText, Plus, CheckCircle2, Truck, ShieldCheck, Check, Trash2 } from 'lucide-react';
 import { fetchApi } from '../../lib/api';
 import { Challan, Customer, Product, Order } from '../../types';
@@ -26,36 +26,45 @@ export function ChallansPage() {
 
   async function loadData() {
     setLoading(true);
-    const [chalRes, custRes, prodRes, ordRes] = await Promise.all([
-      fetchApi<Challan[]>('/challans'),
-      fetchApi<any>('/customers?limit=100'),
-      fetchApi<Product[]>('/products'),
-      fetchApi<Order[]>('/orders'),
-    ]);
+    try {
+      const [chalRes, custRes, prodRes, ordRes] = await Promise.all([
+        fetchApi<any>('/challans'),
+        fetchApi<any>('/customers?limit=100'),
+        fetchApi<any>('/products'),
+        fetchApi<any>('/orders'),
+      ]);
 
-    if (chalRes.success && chalRes.data) {
-      setChallans(chalRes.data);
-    } else {
-      setChallans([]);
+      const chalList = chalRes?.data || chalRes?.data?.data || (Array.isArray(chalRes) ? chalRes : []);
+      setChallans(Array.isArray(chalList) ? chalList : []);
+
+      const ordList = ordRes?.orders || ordRes?.data || (Array.isArray(ordRes) ? ordRes : []);
+      if (Array.isArray(ordList)) {
+        const map: Record<string, Order> = {};
+        ordList.forEach((o: Order) => {
+          map[o.id] = o;
+        });
+        setOrdersMap(map);
+      } else {
+        setOrdersMap({});
+      }
+
+      const customerList = custRes?.data?.data || (Array.isArray(custRes?.data) ? custRes.data : []);
+      setCustomers(Array.isArray(customerList) ? customerList : []);
+      if (Array.isArray(customerList) && customerList.length > 0) {
+        setCustomerId(customerList[0].id);
+      }
+
+      const prodList = prodRes?.data || (Array.isArray(prodRes) ? prodRes : []);
+      const validProdList = Array.isArray(prodList) ? prodList : [];
+      setProducts(validProdList);
+      if (validProdList.length > 0) {
+        setSelectedProductId(validProdList[0].id);
+      }
+    } catch (err) {
+      console.error('Error loading challans page data:', err);
+    } finally {
+      setLoading(false);
     }
-
-    if (ordRes.success && ordRes.data) {
-      const map: Record<string, Order> = {};
-      ordRes.data.forEach((o) => {
-        map[o.id] = o;
-      });
-      setOrdersMap(map);
-    }
-
-    const customerList = custRes.data?.data || (Array.isArray(custRes.data) ? custRes.data : []);
-    setCustomers(customerList);
-    if (customerList.length > 0) setCustomerId(customerList[0].id);
-
-    if (prodRes.success && prodRes.data) {
-      setProducts(prodRes.data);
-      if (prodRes.data.length > 0) setSelectedProductId(prodRes.data[0].id);
-    }
-    setLoading(false);
   }
 
   const handleCreateDraft = async (e: React.FormEvent) => {

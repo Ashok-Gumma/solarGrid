@@ -100,6 +100,11 @@ class DatabaseEngine {
       const smRes = await this.pgPool.query('SELECT id, product_id as "productId", product_name as "productName", product_sku as "productSku", quantity, movement_type as "movementType", reason, reference_type as "referenceType", reference_id as "referenceId", created_by as "createdBy", created_by_name as "createdByName", created_at as "createdAt" FROM stock_movements');
       const oRes = await this.pgPool.query('SELECT id, order_number as "orderNumber", customer_id as "customerId", customer_name as "customerName", address_id as "addressId", address_text as "addressText", installation_type as "installationType", total_amount::float as "totalAmount", status, created_at as "createdAt", updated_at as "updatedAt" FROM orders');
       const oiRes = await this.pgPool.query('SELECT id, order_id as "orderId", product_id as "productId", product_name as "productName", sku, unit_price::float as "unitPrice", quantity, installation_eligible as "installationEligible" FROM order_items');
+      const chRes = await this.pgPool.query('SELECT id, challan_number as "challanNumber", order_id as "orderId", customer_id as "customerId", customer_name as "customerName", status, total_quantity as "totalQuantity", created_by as "createdBy", created_by_name as "createdByName", confirmed_at as "confirmedAt", created_at as "createdAt", updated_at as "updatedAt" FROM challans');
+      const chiRes = await this.pgPool.query('SELECT id, challan_id as "challanId", product_id as "productId", product_name as "productName", sku, unit_price::float as "unitPrice", quantity FROM challan_items');
+      const ijRes = await this.pgPool.query('SELECT id, job_number as "jobNumber", order_id as "orderId", customer_id as "customerId", customer_name as "customerName", customer_phone as "customerPhone", address_id as "addressId", address_text as "addressText", latitude::float, longitude::float, scheduled_date as "scheduledDate", time_slot as "timeSlot", required_crew_size as "requiredCrewSize", status, checklist_state as "checklistState", notes, created_at as "createdAt", updated_at as "updatedAt" FROM installation_jobs');
+      const wRes = await this.pgPool.query('SELECT id, customer_id as "customerId", order_id as "orderId", product_id as "productId", product_name as "productName", serial_number as "serialNumber", start_date as "startDate", end_date as "endDate", status FROM warranties');
+      const srRes = await this.pgPool.query('SELECT id, service_number as "serviceNumber", customer_id as "customerId", customer_name as "customerName", customer_phone as "customerPhone", address_id as "addressId", address_text as "addressText", latitude::float, longitude::float, product_id as "productId", product_name as "productName", problem_category as "problemCategory", description, warranty_status as "warrantyStatus", scheduled_date as "scheduledDate", time_slot as "timeSlot", status, resolution_notes as "resolutionNotes", total_cost::float as "totalCost", created_at as "createdAt", updated_at as "updatedAt" FROM service_requests');
 
       if (uRes.rows && uRes.rows.length > 0) this.data.users = uRes.rows;
       if (cRes.rows && cRes.rows.length > 0) this.data.customers = cRes.rows;
@@ -107,6 +112,11 @@ class DatabaseEngine {
       if (smRes.rows && smRes.rows.length > 0) this.data.stockMovements = smRes.rows;
       if (oRes.rows && oRes.rows.length > 0) this.data.orders = oRes.rows;
       if (oiRes.rows && oiRes.rows.length > 0) this.data.orderItems = oiRes.rows;
+      if (chRes.rows && chRes.rows.length > 0) this.data.challans = chRes.rows;
+      if (chiRes.rows && chiRes.rows.length > 0) this.data.challanItems = chiRes.rows;
+      if (ijRes.rows && ijRes.rows.length > 0) this.data.installationJobs = ijRes.rows;
+      if (wRes.rows && wRes.rows.length > 0) this.data.warranties = wRes.rows;
+      if (srRes.rows && srRes.rows.length > 0) this.data.serviceRequests = srRes.rows;
     } catch (err: any) {
       console.error('Error syncing from PostgreSQL:', err.message);
     }
@@ -221,6 +231,9 @@ class DatabaseEngine {
   }
 
   public get<K extends keyof DatabaseSchema>(table: K): DatabaseSchema[K] {
+    if (!this.data[table]) {
+      this.data[table] = [] as any;
+    }
     return this.data[table];
   }
 
