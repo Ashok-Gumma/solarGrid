@@ -20,12 +20,15 @@ export function ChallansPage() {
   const [selectedProductId, setSelectedProductId] = useState('');
   const [quantity, setQuantity] = useState(1);
 
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   useEffect(() => {
     loadData();
   }, []);
 
   async function loadData() {
     setLoading(true);
+    setErrorMsg(null);
     try {
       const [chalRes, custRes, prodRes, ordRes] = await Promise.all([
         fetchApi<any>('/challans'),
@@ -33,6 +36,10 @@ export function ChallansPage() {
         fetchApi<any>('/products'),
         fetchApi<any>('/orders'),
       ]);
+
+      if (chalRes && !chalRes.success && chalRes.message) {
+        setErrorMsg(chalRes.message);
+      }
 
       const chalList = chalRes?.data || chalRes?.data?.data || (Array.isArray(chalRes) ? chalRes : []);
       setChallans(Array.isArray(chalList) ? chalList : []);
@@ -61,8 +68,9 @@ export function ChallansPage() {
       if (validProdList.length > 0) {
         setSelectedProductId(validProdList[0].id);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error loading challans page data:', err);
+      setErrorMsg(err.message || 'Failed to load challans data.');
     } finally {
       setLoading(false);
     }
@@ -156,6 +164,12 @@ export function ChallansPage() {
           <Plus size={16} /> Generate Draft Challan
         </button>
       </div>
+
+      {errorMsg && (
+        <div className="rounded-2xl bg-amber-50 p-4 border border-amber-200 text-amber-800 text-xs font-semibold">
+          ⚠️ {errorMsg}
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-3">

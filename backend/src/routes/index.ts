@@ -53,8 +53,8 @@ router.get('/stock-movements', authenticate, authorize('ADMIN', 'WAREHOUSE'), In
 router.post('/stock-movements', authenticate, authorize('ADMIN', 'WAREHOUSE'), InventoryController.adjust);
 
 // --- SALES CHALLANS ---
-router.get('/challans', authenticate, authorize('ADMIN', 'WAREHOUSE'), ChallanController.getAll);
-router.get('/challans/:id', authenticate, authorize('ADMIN', 'WAREHOUSE'), ChallanController.getById);
+router.get('/challans', authenticate, authorize('ADMIN', 'WAREHOUSE', 'TECHNICIAN'), ChallanController.getAll);
+router.get('/challans/:id', authenticate, authorize('ADMIN', 'WAREHOUSE', 'TECHNICIAN'), ChallanController.getById);
 router.post('/challans', authenticate, authorize('ADMIN', 'WAREHOUSE'), ChallanController.create);
 router.post('/challans/:id/confirm', authenticate, authorize('ADMIN', 'WAREHOUSE'), ChallanController.confirm);
 router.delete('/challans/:id', authenticate, authorize('ADMIN', 'WAREHOUSE'), ChallanController.delete);
