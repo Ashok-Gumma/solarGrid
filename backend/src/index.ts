@@ -17,11 +17,51 @@ app.use(cors({
 app.options('*', cors());
 app.use(express.json());
 
-// Auto-seed if users table is empty
-if (db.get('users').length === 0) {
-  console.log('[SEED] Initializing seed data...');
-  seedDatabase().catch((err) => console.error('[SEED_ERROR]', err));
+import { hashPassword } from './utils/password.js';
+import { User, Customer } from './types/index.js';
+
+// Auto-seed if users table is empty or missing default customer
+async function ensureSeedData() {
+  const users = db.get('users');
+  if (users.length === 0) {
+    console.log('[SEED] Initializing seed data...');
+    await seedDatabase();
+  } else {
+    const hasDefaultCustomer = users.some((u) => u.email.toLowerCase() === 'user@gmail.com');
+    if (!hasDefaultCustomer) {
+      console.log('[SEED] Adding default customer user@gmail.com...');
+      const defaultUserPasswordHash = await hashPassword('user@123');
+      const defaultUser: User = {
+        id: 'usr-customer-default',
+        name: 'Default Customer',
+        email: 'user@gmail.com',
+        passwordHash: defaultUserPasswordHash,
+        role: 'CUSTOMER',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      users.push(defaultUser);
+
+      const customers = db.get('customers');
+      customers.push({
+        id: 'CUST-default',
+        userId: 'usr-customer-default',
+        name: 'Default Customer',
+        businessName: '',
+        email: 'user@gmail.com',
+        phone: '9876543210',
+        gstNumber: '',
+        customerType: 'RETAIL',
+        status: 'ACTIVE',
+        notes: 'Default customer account for testing',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      db.saveData();
+    }
+  }
 }
+ensureSeedData().catch((err) => console.error('[SEED_ERROR]', err));
 
 // Root & API Health check endpoints
 app.get(['/', '/health', '/api/health'], (req, res) => {
