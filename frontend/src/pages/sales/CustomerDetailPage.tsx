@@ -176,7 +176,7 @@ export function CustomerDetailPage() {
                 </div>
                 <div className="flex justify-between text-slate-500">
                   <span>Placed on {new Date(o.createdAt).toLocaleDateString()}</span>
-                  <b className="text-slate-900 font-extrabold text-sm">₹{o.totalAmount.toLocaleString('en-IN')}</b>
+                  <b className="text-slate-900 font-extrabold text-sm">₹{(o.totalAmount || 0).toLocaleString('en-IN')}</b>
                 </div>
               </div>
             ))

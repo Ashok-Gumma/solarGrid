@@ -63,7 +63,7 @@ export function AdminOrdersPage() {
     const q = searchQuery.toLowerCase();
     const matchesSearch =
       !q ||
-      o.orderNumber.toLowerCase().includes(q) ||
+      (o.orderNumber && o.orderNumber.toLowerCase().includes(q)) ||
       (o.customerName && o.customerName.toLowerCase().includes(q)) ||
       (o.addressText && o.addressText.toLowerCase().includes(q));
     return matchesStatus && matchesSearch;
@@ -169,7 +169,7 @@ export function AdminOrdersPage() {
                   </div>
                   <div className="text-right">
                     <span className="block text-[10px] uppercase text-slate-400">Total Order Value</span>
-                    <b className="text-lg font-extrabold text-slate-900">₹{o.totalAmount.toLocaleString('en-IN')}</b>
+                    <b className="text-lg font-extrabold text-slate-900">₹{(o.totalAmount || 0).toLocaleString('en-IN')}</b>
                   </div>
                 </div>
 
