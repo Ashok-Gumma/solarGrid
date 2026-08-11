@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { ShoppingCart, Heart, ArrowLeft, ShieldCheck, Wrench, Sparkles, Check } from 'lucide-react';
 import { fetchApi } from '../../lib/api';
+import { useAuth } from '../../lib/auth-context';
 import { Product } from '../../types';
 
 const DEFAULT_PRODUCT_IMAGES: Record<string, string> = {
@@ -26,6 +27,7 @@ export function ProductDetailPage({
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
 
+  const { user } = useAuth();
   const [product, setProduct] = useState<Product | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,13 +35,25 @@ export function ProductDetailPage({
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [added, setAdded] = useState(false);
 
+  const getWishlistKey = () => (user ? `solargrid_wishlist_${user.id}` : 'solargrid_wishlist_guest');
+
   const [wishlist, setWishlist] = useState<string[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem('solargrid_wishlist') || '[]');
+      const key = user ? `solargrid_wishlist_${user.id}` : 'solargrid_wishlist_guest';
+      return JSON.parse(localStorage.getItem(key) || '[]');
     } catch {
       return [];
     }
   });
+
+  useEffect(() => {
+    try {
+      const key = getWishlistKey();
+      setWishlist(JSON.parse(localStorage.getItem(key) || '[]'));
+    } catch {
+      setWishlist([]);
+    }
+  }, [user?.id]);
 
   const PRODUCT_SPECIFIC_IMAGES: Record<string, string> = {
     'ELE-DCB-2IN': '/assets/products/dc_combiner_box.png',
@@ -85,7 +99,11 @@ export function ProductDetailPage({
       updated = [...wishlist, product.id];
     }
     setWishlist(updated);
-    localStorage.setItem('solargrid_wishlist', JSON.stringify(updated));
+    try {
+      localStorage.setItem(getWishlistKey(), JSON.stringify(updated));
+    } catch (err) {
+      console.error('Failed to save wishlist:', err);
+    }
   };
 
   const handleAddToCart = () => {

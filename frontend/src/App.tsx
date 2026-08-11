@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Route, Switch, Redirect } from 'wouter';
 import { AuthProvider, useAuth, Role } from './lib/auth-context';
 import { Sidebar } from './components/navigation/Sidebar';
@@ -64,11 +64,45 @@ function ProtectedRoute({
 
 function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [cart, setCart] = useState<CartLine[]>([]);
   const { user, role } = useAuth();
 
-  const handleAddToCart = (product: Product, quantity = 1) => {
+  const getStorageKey = () => (user ? `solargrid_cart_${user.id}` : 'solargrid_cart_guest');
+
+  const [cart, setCart] = useState<CartLine[]>(() => {
+    try {
+      const key = user ? `solargrid_cart_${user.id}` : 'solargrid_cart_guest';
+      return JSON.parse(localStorage.getItem(key) || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  // Re-sync cart when active user changes (e.g. login/logout)
+  useEffect(() => {
+    try {
+      const key = getStorageKey();
+      const saved = JSON.parse(localStorage.getItem(key) || '[]');
+      setCart(saved);
+    } catch {
+      setCart([]);
+    }
+  }, [user?.id]);
+
+  // Persist cart changes
+  const updateCartAndPersist = (newCart: CartLine[] | ((prev: CartLine[]) => CartLine[])) => {
     setCart((prev) => {
+      const updated = typeof newCart === 'function' ? newCart(prev) : newCart;
+      try {
+        localStorage.setItem(getStorageKey(), JSON.stringify(updated));
+      } catch (err) {
+        console.error('Failed to persist cart:', err);
+      }
+      return updated;
+    });
+  };
+
+  const handleAddToCart = (product: Product, quantity = 1) => {
+    updateCartAndPersist((prev) => {
       const existing = prev.find((line) => line.product.id === product.id);
       if (existing) {
         return prev.map((line) =>
@@ -80,7 +114,7 @@ function MainLayout() {
   };
 
   const handleUpdateCartQty = (productId: string, delta: number) => {
-    setCart((prev) =>
+    updateCartAndPersist((prev) =>
       prev
         .map((line) =>
           line.product.id === productId
@@ -92,7 +126,7 @@ function MainLayout() {
   };
 
   const handleRemoveFromCart = (productId: string) => {
-    setCart((prev) => prev.filter((line) => line.product.id !== productId));
+    updateCartAndPersist((prev) => prev.filter((line) => line.product.id !== productId));
   };
 
   return (

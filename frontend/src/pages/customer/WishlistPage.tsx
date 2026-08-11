@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { Heart, ShoppingBag, ShoppingCart, Trash2, ArrowRight } from 'lucide-react';
 import { fetchApi } from '../../lib/api';
+import { useAuth } from '../../lib/auth-context';
 import { Product } from '../../types';
 
 const DEFAULT_PRODUCT_IMAGES: Record<string, string> = {
@@ -24,16 +25,29 @@ export function WishlistPage({
   onAddToCart: (product: Product, quantity?: number) => void;
 }) {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
   const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const getWishlistKey = () => (user ? `solargrid_wishlist_${user.id}` : 'solargrid_wishlist_guest');
+
   const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem('solargrid_wishlist') || '[]');
+      const key = user ? `solargrid_wishlist_${user.id}` : 'solargrid_wishlist_guest';
+      return JSON.parse(localStorage.getItem(key) || '[]');
     } catch {
       return [];
     }
   });
+
+  useEffect(() => {
+    try {
+      const key = getWishlistKey();
+      setWishlistIds(JSON.parse(localStorage.getItem(key) || '[]'));
+    } catch {
+      setWishlistIds([]);
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     async function loadWishlist() {
@@ -51,7 +65,11 @@ export function WishlistPage({
   const handleRemoveFromWishlist = (productId: string) => {
     const updated = wishlistIds.filter((id) => id !== productId);
     setWishlistIds(updated);
-    localStorage.setItem('solargrid_wishlist', JSON.stringify(updated));
+    try {
+      localStorage.setItem(getWishlistKey(), JSON.stringify(updated));
+    } catch (err) {
+      console.error('Failed to save wishlist:', err);
+    }
   };
 
   const PRODUCT_SPECIFIC_IMAGES: Record<string, string> = {

@@ -5,6 +5,7 @@ import {
   Heart, X, ArrowRight, Star, Sparkles, ChevronRight, Zap, RefreshCw
 } from 'lucide-react';
 import { fetchApi } from '../../lib/api';
+import { useAuth } from '../../lib/auth-context';
 import { Product } from '../../types';
 
 // High clarity product assets stored directly in project frontend public directory
@@ -30,20 +31,33 @@ export function ProductCatalogPage({
   cartCount: number;
 }) {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [addedId, setAddedId] = useState<string | null>(null);
 
+  const getWishlistKey = () => (user ? `solargrid_wishlist_${user.id}` : 'solargrid_wishlist_guest');
+
   // Wishlist State
   const [wishlist, setWishlist] = useState<string[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem('solargrid_wishlist') || '[]');
+      const key = user ? `solargrid_wishlist_${user.id}` : 'solargrid_wishlist_guest';
+      return JSON.parse(localStorage.getItem(key) || '[]');
     } catch {
       return [];
     }
   });
+
+  useEffect(() => {
+    try {
+      const key = getWishlistKey();
+      setWishlist(JSON.parse(localStorage.getItem(key) || '[]'));
+    } catch {
+      setWishlist([]);
+    }
+  }, [user?.id]);
 
   // Product Details Modal State
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
@@ -70,7 +84,11 @@ export function ProductCatalogPage({
       updated = [...wishlist, productId];
     }
     setWishlist(updated);
-    localStorage.setItem('solargrid_wishlist', JSON.stringify(updated));
+    try {
+      localStorage.setItem(getWishlistKey(), JSON.stringify(updated));
+    } catch (err) {
+      console.error('Failed to save wishlist:', err);
+    }
   };
 
   const openProductModal = (product: Product) => {
