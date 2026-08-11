@@ -15,6 +15,7 @@ const router = Router();
 
 // --- PUBLIC AUTH ROUTES ---
 router.post('/auth/login', AuthController.login);
+router.get('/auth/login', (req, res) => res.json({ success: false, message: 'Please submit a POST request to /auth/login to authenticate.' }));
 router.post('/auth/register', AuthController.register);
 router.get('/auth/me', authenticate, AuthController.getMe);
 router.put('/auth/profile', authenticate, AuthController.updateProfile);
