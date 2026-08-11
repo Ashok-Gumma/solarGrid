@@ -30,7 +30,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserSession | null>(null);
-  const [role, setRole] = useState<Role>('CUSTOMER');
+  const [role, setRole] = useState<Role>(() => {
+    return (localStorage.getItem('solargrid_role') as Role) || 'CUSTOMER';
+  });
   const [token, setToken] = useState<string | null>(localStorage.getItem('solargrid_token'));
   const [loading, setLoading] = useState(true);
 
