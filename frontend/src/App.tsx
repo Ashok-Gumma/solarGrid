@@ -152,7 +152,7 @@ function MainLayout() {
               {() => <ProtectedRoute allowedRoles={['ADMIN']}><OverviewPage /></ProtectedRoute>}
             </Route>
             <Route path="/audit-logs">
-              {() => <ProtectedRoute allowedRoles={['ADMIN']}><AuditLogsPage /></ProtectedRoute>}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'WAREHOUSE']}><AuditLogsPage /></ProtectedRoute>}
             </Route>
 
             {/* Customers & CRM */}

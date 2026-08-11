@@ -34,6 +34,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       { href: '/inventory',       label: 'Inventory Management', icon: Box },
       { href: '/stock-movements', label: 'Stock Movements',      icon: Layers },
       { href: '/challans',        label: 'Challans Dispatch',    icon: FileText },
+      { href: '/audit-logs',      label: 'Audit & Activity Logs', icon: Activity },
     ],
     TECHNICIAN: [
       { href: '/technician',  label: "Today's Route & Jobs", icon: HardHat },

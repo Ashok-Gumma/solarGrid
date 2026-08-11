@@ -116,7 +116,7 @@ router.post('/notifications/:id/read', authenticate, (req: AuthenticatedRequest,
 
 // --- CRM & AUDIT LOGS ---
 router.post('/crm/followups', authenticate, authorize('ADMIN'), CrmController.createFollowUp);
-router.get('/audit-logs', authenticate, authorize('ADMIN'), (req, res) => {
+router.get('/audit-logs', authenticate, authorize('ADMIN', 'WAREHOUSE'), (req, res) => {
   const logs = db.get('auditLogs');
   res.json({ success: true, data: logs });
 });
