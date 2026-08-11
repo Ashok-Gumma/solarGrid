@@ -52,7 +52,9 @@ function ProtectedRoute({
   if (allowedRoles && !allowedRoles.includes(role)) {
     const roleDefaultRoutes: Record<Role, string> = {
       ADMIN: '/admin',
+      SALES: '/customers',
       WAREHOUSE: '/inventory',
+      ACCOUNTS: '/challans',
       TECHNICIAN: '/technician',
       CUSTOMER: '/store',
     };
@@ -149,32 +151,32 @@ function MainLayout() {
 
             {/* Admin & Management */}
             <Route path="/admin">
-              {() => <ProtectedRoute allowedRoles={['ADMIN']}><OverviewPage /></ProtectedRoute>}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'SALES', 'ACCOUNTS']}><OverviewPage /></ProtectedRoute>}
             </Route>
             <Route path="/audit-logs">
-              {() => <ProtectedRoute allowedRoles={['ADMIN']}><AuditLogsPage /></ProtectedRoute>}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'ACCOUNTS']}><AuditLogsPage /></ProtectedRoute>}
             </Route>
 
             {/* Customers & CRM */}
             <Route path="/customers">
-              {() => <ProtectedRoute allowedRoles={['ADMIN']}><CustomersPage /></ProtectedRoute>}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'SALES', 'ACCOUNTS']}><CustomersPage /></ProtectedRoute>}
             </Route>
             <Route path="/customers/:id">
-              {() => <ProtectedRoute allowedRoles={['ADMIN']}><CustomerDetailPage /></ProtectedRoute>}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'SALES', 'ACCOUNTS']}><CustomerDetailPage /></ProtectedRoute>}
             </Route>
             <Route path="/crm">
-              {() => <ProtectedRoute allowedRoles={['ADMIN']}><CustomersPage /></ProtectedRoute>}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'SALES', 'ACCOUNTS']}><CustomersPage /></ProtectedRoute>}
             </Route>
 
             {/* Customer Store Actions & Services */}
             <Route path="/wishlist">
-              {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN']}><WishlistPage onAddToCart={handleAddToCart} /></ProtectedRoute>}
+              {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN', 'SALES']}><WishlistPage onAddToCart={handleAddToCart} /></ProtectedRoute>}
             </Route>
             <Route path="/cart">
-              {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN']}><CartPage cart={cart} onUpdateQty={handleUpdateCartQty} onRemove={handleRemoveFromCart} /></ProtectedRoute>}
+              {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN', 'SALES']}><CartPage cart={cart} onUpdateQty={handleUpdateCartQty} onRemove={handleRemoveFromCart} /></ProtectedRoute>}
             </Route>
             <Route path="/checkout">
-              {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN']}><CheckoutPage cart={cart} onClearCart={() => setCart([])} /></ProtectedRoute>}
+              {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN', 'SALES']}><CheckoutPage cart={cart} onClearCart={() => setCart([])} /></ProtectedRoute>}
             </Route>
             <Route path="/my-orders">
               {() => <ProtectedRoute allowedRoles={['CUSTOMER', 'ADMIN']}><MyOrdersPage /></ProtectedRoute>}
@@ -202,10 +204,10 @@ function MainLayout() {
 
             {/* Sales Challans & Orders */}
             <Route path="/challans">
-              {() => <ProtectedRoute allowedRoles={['ADMIN', 'WAREHOUSE']}><ChallansPage /></ProtectedRoute>}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'SALES', 'ACCOUNTS', 'WAREHOUSE']}><ChallansPage /></ProtectedRoute>}
             </Route>
             <Route path="/orders">
-              {() => <ProtectedRoute allowedRoles={['ADMIN', 'WAREHOUSE']}><AdminOrdersPage /></ProtectedRoute>}
+              {() => <ProtectedRoute allowedRoles={['ADMIN', 'SALES', 'ACCOUNTS', 'WAREHOUSE']}><AdminOrdersPage /></ProtectedRoute>}
             </Route>
 
             {/* Technician Field Operations */}
@@ -223,7 +225,13 @@ function MainLayout() {
             <Route>
               {() => {
                 if (!user) return <Redirect to="/" />;
-                return <Redirect to={role === 'ADMIN' ? '/admin' : role === 'WAREHOUSE' ? '/inventory' : role === 'TECHNICIAN' ? '/technician' : '/store'} />;
+                return <Redirect to={
+                  role === 'ADMIN' ? '/admin' :
+                  role === 'SALES' ? '/customers' :
+                  role === 'ACCOUNTS' ? '/challans' :
+                  role === 'WAREHOUSE' ? '/inventory' :
+                  role === 'TECHNICIAN' ? '/technician' : '/store'
+                } />;
               }}
             </Route>
           </Switch>
