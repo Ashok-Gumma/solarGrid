@@ -149,9 +149,9 @@ function MainLayout() {
               {() => <ProductDetailPage onAddToCart={handleAddToCart} />}
             </Route>
 
-            {/* Admin & Management */}
+            {/* Admin System Oversight */}
             <Route path="/admin">
-              {() => <ProtectedRoute allowedRoles={['ADMIN', 'SALES', 'ACCOUNTS']}><OverviewPage /></ProtectedRoute>}
+              {() => <ProtectedRoute allowedRoles={['ADMIN']}><OverviewPage /></ProtectedRoute>}
             </Route>
             <Route path="/audit-logs">
               {() => <ProtectedRoute allowedRoles={['ADMIN', 'ACCOUNTS']}><AuditLogsPage /></ProtectedRoute>}

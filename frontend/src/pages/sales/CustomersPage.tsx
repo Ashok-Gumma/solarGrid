@@ -3,9 +3,11 @@ import { useLocation } from 'wouter';
 import { Users, Search, Plus, Phone, Mail, ArrowRight } from 'lucide-react';
 import { fetchApi } from '../../lib/api';
 import { Customer } from '../../types';
+import { useAuth } from '../../lib/auth-context';
 
 export function CustomersPage() {
   const [, setLocation] = useLocation();
+  const { role } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -57,9 +59,11 @@ export function CustomersPage() {
           <h1>Customer CRM Management</h1>
           <p>Manage retail buyers, solar dealers, wholesale distributors, and CRM follow-ups.</p>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="btn-primary">
-          <Plus size={15} /> Add New Customer
-        </button>
+        {role !== 'ACCOUNTS' && (
+          <button onClick={() => setShowAddModal(true)} className="btn-primary">
+            <Plus size={15} /> Add New Customer
+          </button>
+        )}
       </div>
 
       {/* Filter Bar */}

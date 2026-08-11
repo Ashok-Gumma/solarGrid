@@ -60,12 +60,12 @@ router.post('/challans/:id/confirm', authenticate, authorize('ADMIN', 'WAREHOUSE
 router.delete('/challans/:id', authenticate, authorize('ADMIN', 'WAREHOUSE'), ChallanController.delete);
 
 // --- ORDERS ---
-router.get('/orders', authenticate, OrderController.getAll);
-router.get('/orders/:id', authenticate, OrderController.getById);
-router.post('/orders', authenticate, OrderController.create);
-router.post('/orders/:id/cancel', authenticate, OrderController.cancel);
+router.get('/orders', authenticate, authorize('ADMIN', 'SALES', 'ACCOUNTS', 'WAREHOUSE', 'CUSTOMER'), OrderController.getAll);
+router.get('/orders/:id', authenticate, authorize('ADMIN', 'SALES', 'ACCOUNTS', 'WAREHOUSE', 'CUSTOMER'), OrderController.getById);
+router.post('/orders', authenticate, authorize('ADMIN', 'SALES', 'CUSTOMER'), OrderController.create);
+router.post('/orders/:id/cancel', authenticate, authorize('ADMIN', 'SALES', 'CUSTOMER'), OrderController.cancel);
 router.post('/orders/:id/deliver', authenticate, authorize('ADMIN', 'WAREHOUSE', 'TECHNICIAN'), OrderController.markDelivered);
-router.post('/orders/:id/return', authenticate, OrderController.requestReturn);
+router.post('/orders/:id/return', authenticate, authorize('ADMIN', 'CUSTOMER'), OrderController.requestReturn);
 router.post('/orders/:id/approve-return', authenticate, authorize('ADMIN', 'WAREHOUSE'), OrderController.approveReturn);
 
 // --- INSTALLATIONS ---

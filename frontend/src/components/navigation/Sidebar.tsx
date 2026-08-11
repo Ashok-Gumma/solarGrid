@@ -20,7 +20,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
   const navMap: Record<Role, NavItem[]> = {
     ADMIN: [
-      { href: '/admin',        label: 'Overview',        icon: LayoutDashboard },
+      { href: '/admin',        label: 'System Overview', icon: LayoutDashboard },
       { href: '/customers',    label: 'Customers CRM',   icon: Users },
       { href: '/inventory',    label: 'Inventory & Stock', icon: Box },
       { href: '/challans',     label: 'Sales Challans',  icon: FileText },
@@ -31,7 +31,6 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       { href: '/profile',      label: 'My Profile & Settings', icon: Settings2 },
     ],
     SALES: [
-      { href: '/admin',        label: 'Overview',        icon: LayoutDashboard },
       { href: '/customers',    label: 'Customer CRM',    icon: Users },
       { href: '/orders',       label: 'Orders Management', icon: ShoppingBag },
       { href: '/challans',     label: 'Sales Challans',  icon: FileText },
@@ -45,7 +44,6 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       { href: '/profile',         label: 'My Profile',           icon: Settings2 },
     ],
     ACCOUNTS: [
-      { href: '/admin',        label: 'Overview & Analytics', icon: LayoutDashboard },
       { href: '/challans',     label: 'Challans & Invoices', icon: FileText },
       { href: '/orders',       label: 'Orders & Payments', icon: ShoppingBag },
       { href: '/customers',    label: 'Customer Accounts', icon: Users },

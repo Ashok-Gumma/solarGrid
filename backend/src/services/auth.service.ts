@@ -11,13 +11,30 @@ export class AuthService {
   static async login(email: string, password?: string, roleOverride?: Role) {
     let users = db.get('users');
 
-    if (!users || users.length === 0 || (!users.some((u) => u.email.toLowerCase() === email.toLowerCase()) && ['user@gmail.com', 'admin@solargrid.com', 'warehouse@solargrid.com', 'tech@solargrid.com'].includes(email.toLowerCase()))) {
+    const seedEmails = ['user@gmail.com', 'admin@solargrid.com', 'sales@solargrid.com', 'warehouse@solargrid.com', 'accounts@solargrid.com', 'tech@solargrid.com'];
+    if (!users || users.length === 0 || (!users.some((u) => u.email.toLowerCase() === email.toLowerCase()) && seedEmails.includes(email.toLowerCase()))) {
       console.log(`[AUTH] Initializing/re-seeding database for login request (${email})...`);
       await seedDatabase();
       users = db.get('users');
     }
 
     let user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+
+    // PostgreSQL Cloud Fallback Lookup
+    if (!user && db.pgPool) {
+      try {
+        const res = await db.pgPool.query(
+          'SELECT id, name, email, password_hash as "passwordHash", role, phone, avatar_url as "avatarUrl", created_at as "createdAt", updated_at as "updatedAt" FROM users WHERE LOWER(email) = LOWER($1)',
+          [email]
+        );
+        if (res.rows && res.rows.length > 0) {
+          user = res.rows[0];
+          users.push(user!);
+        }
+      } catch (pgErr: any) {
+        console.error('Error fetching user from PostgreSQL:', pgErr.message);
+      }
+    }
 
     if (!user) {
       throw new AppError('Invalid credentials.', 401);
@@ -81,7 +98,7 @@ export class AuthService {
     const passwordHash = await hashPassword(data.password);
     const userId = `usr-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    const assignedRole: Role = (data.role && ['ADMIN', 'WAREHOUSE', 'TECHNICIAN', 'CUSTOMER'].includes(data.role))
+    const assignedRole: Role = (data.role && ['ADMIN', 'SALES', 'WAREHOUSE', 'ACCOUNTS', 'TECHNICIAN', 'CUSTOMER'].includes(data.role))
       ? data.role
       : 'CUSTOMER';
 
@@ -98,15 +115,30 @@ export class AuthService {
 
     users.unshift(newUser);
 
-    const validatedCustomerType = (data.customerType as CustomerType) || 'RETAIL';
+    // Persist to PostgreSQL Cloud
+    if (db.pgPool) {
+      try {
+        await db.pgPool.query(
+          `INSERT INTO users (id, name, email, password_hash, role, phone, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+           ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash, role = EXCLUDED.role, name = EXCLUDED.name`,
+          [newUser.id, newUser.name, newUser.email, newUser.passwordHash, newUser.role, newUser.phone || '', newUser.createdAt, newUser.updatedAt]
+        );
+      } catch (err: any) {
+        console.warn('PostgreSQL Cloud register insert warning:', err.message);
+      }
+    }
+
+    const customers = db.get('customers');
+    const validatedCustomerType: CustomerType = (data.customerType && ['RETAIL', 'WHOLESALE', 'DISTRIBUTOR'].includes(data.customerType))
+      ? (data.customerType as CustomerType)
+      : 'RETAIL';
 
     // If role is CUSTOMER, create customer CRM profile
     if (assignedRole === 'CUSTOMER') {
-      const customers = db.get('customers');
-      const customerId = `CUST-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
       const newCustomer: Customer = {
-        id: customerId,
-        userId,
+        id: `CUST-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        userId: userId,
         name: data.name,
         businessName: data.businessName || '',
         email: data.email,
@@ -114,11 +146,23 @@ export class AuthService {
         gstNumber: data.gstNumber || '',
         customerType: validatedCustomerType,
         status: 'ACTIVE',
-        notes: `New ${validatedCustomerType} account registered via website portal.`,
+        notes: 'Self-registered customer account',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
       customers.unshift(newCustomer);
+
+      if (db.pgPool) {
+        try {
+          await db.pgPool.query(
+            `INSERT INTO customers (id, user_id, name, business_name, email, phone, gst_number, customer_type, status, notes, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+            [newCustomer.id, newCustomer.userId, newCustomer.name, newCustomer.businessName || '', newCustomer.email, newCustomer.phone, newCustomer.gstNumber || '', newCustomer.customerType, newCustomer.status, newCustomer.notes, newCustomer.createdAt, newCustomer.updatedAt]
+          );
+        } catch (err: any) {
+          console.warn('PostgreSQL Cloud customer insert warning:', err.message);
+        }
+      }
     }
 
     const token = generateToken({
@@ -147,10 +191,26 @@ export class AuthService {
   }
 
   static async getProfile(userId: string) {
-    const users = db.get('users');
-    const user = users.find((u) => u.id === userId);
+    let users = db.get('users');
+    let user = users.find((u) => u.id === userId || u.email.toLowerCase() === userId.toLowerCase());
+
+    if (!user && db.pgPool) {
+      try {
+        const res = await db.pgPool.query(
+          'SELECT id, name, email, password_hash as "passwordHash", role, phone, avatar_url as "avatarUrl", created_at as "createdAt", updated_at as "updatedAt" FROM users WHERE id = $1 OR LOWER(email) = LOWER($1)',
+          [userId]
+        );
+        if (res.rows && res.rows.length > 0) {
+          user = res.rows[0];
+          users.push(user!);
+        }
+      } catch (err: any) {
+        console.error('Error fetching user profile from PG:', err.message);
+      }
+    }
+
     if (!user) {
-      throw new AppError('User not found.', 404);
+      throw new AppError('User profile not found.', 404);
     }
 
     const customers = db.get('customers');
@@ -167,9 +227,24 @@ export class AuthService {
 
   static async updateProfile(userId: string, updates: { name?: string; phone?: string; businessName?: string; gstNumber?: string }) {
     const users = db.get('users');
-    const userIndex = users.findIndex((u) => u.id === userId);
+    let userIndex = users.findIndex((u) => u.id === userId);
+    if (userIndex === -1 && db.pgPool) {
+      try {
+        const res = await db.pgPool.query(
+          'SELECT id, name, email, password_hash as "passwordHash", role, phone, avatar_url as "avatarUrl", created_at as "createdAt", updated_at as "updatedAt" FROM users WHERE id = $1 OR LOWER(email) = LOWER($1)',
+          [userId]
+        );
+        if (res.rows && res.rows.length > 0) {
+          users.push(res.rows[0]);
+          userIndex = users.length - 1;
+        }
+      } catch (err: any) {
+        console.error('Error loading user for profile update:', err.message);
+      }
+    }
+
     if (userIndex === -1) {
-      throw new AppError('User not found.', 404);
+      throw new AppError('User profile not found.', 404);
     }
 
     const user = users[userIndex];
@@ -177,6 +252,17 @@ export class AuthService {
     if (updates.phone) user.phone = updates.phone.trim();
     user.updatedAt = new Date().toISOString();
     users[userIndex] = user;
+
+    if (db.pgPool) {
+      try {
+        await db.pgPool.query(
+          'UPDATE users SET name = $1, phone = $2, updated_at = $3 WHERE id = $4',
+          [user.name, user.phone || '', user.updatedAt, user.id]
+        );
+      } catch (err: any) {
+        console.warn('PostgreSQL Cloud profile update warning:', err.message);
+      }
+    }
 
     // Synchronize customer CRM record if present
     const customers = db.get('customers');
@@ -189,6 +275,17 @@ export class AuthService {
       if (updates.gstNumber !== undefined) cust.gstNumber = updates.gstNumber.trim();
       cust.updatedAt = new Date().toISOString();
       customers[custIndex] = cust;
+
+      if (db.pgPool) {
+        try {
+          await db.pgPool.query(
+            'UPDATE customers SET name = $1, phone = $2, business_name = $3, gst_number = $4, updated_at = $5 WHERE id = $6',
+            [cust.name, cust.phone, cust.businessName || '', cust.gstNumber || '', cust.updatedAt, cust.id]
+          );
+        } catch (err: any) {
+          console.warn('PostgreSQL Cloud customer update warning:', err.message);
+        }
+      }
     }
 
     logAudit(user.id, user.name, 'UPDATE_PROFILE', 'User', user.id, updates);

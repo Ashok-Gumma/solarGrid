@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { FileText, Plus, CheckCircle2, Truck, ShieldCheck, Check, Trash2 } from 'lucide-react';
 import { fetchApi } from '../../lib/api';
 import { Challan, Customer, Product, Order } from '../../types';
+import { useAuth } from '../../lib/auth-context';
 
 export function ChallansPage() {
+  const { role } = useAuth();
   const [challans, setChallans] = useState<Challan[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -157,12 +159,14 @@ export function ChallansPage() {
           <p className="text-xs text-slate-500">Issue delivery sales challans with automated stock deduction, delivery tracking, and warranty activation.</p>
         </div>
 
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-black"
-        >
-          <Plus size={16} /> Generate Draft Challan
-        </button>
+        {['ADMIN', 'SALES'].includes(role) && (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-black"
+          >
+            <Plus size={16} /> Generate Draft Challan
+          </button>
+        )}
       </div>
 
       {errorMsg && (
@@ -183,14 +187,16 @@ export function ChallansPage() {
           </span>
           <h3 className="text-lg font-bold text-slate-900">No Sales Challans Generated Yet</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            Your sales challans ledger is clean. Click Generate Draft Challan to issue your first equipment delivery challan.
+            Your sales challans ledger is clean.
           </p>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-black"
-          >
-            <Plus size={16} /> Generate First Challan
-          </button>
+          {['ADMIN', 'SALES'].includes(role) && (
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-black"
+            >
+              <Plus size={16} /> Generate First Challan
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
@@ -213,7 +219,7 @@ export function ChallansPage() {
                       CHALLAN {ch.status}
                     </span>
 
-                    {ch.status === 'DRAFT' && (
+                    {ch.status === 'DRAFT' && ['ADMIN', 'WAREHOUSE'].includes(role) && (
                       <button
                         disabled={confirmingId === ch.id}
                         onClick={() => handleConfirmChallan(ch.id)}
@@ -231,7 +237,7 @@ export function ChallansPage() {
                           <ShieldCheck size={14} className="text-[#27522f]" />
                           ORDER DELIVERED (Warranties Active)
                         </span>
-                      ) : (
+                      ) : ['ADMIN', 'WAREHOUSE', 'TECHNICIAN'].includes(role) ? (
                         <button
                           disabled={deliveringOrderId === ch.orderId}
                           onClick={() => handleMarkOrderDelivered(ch.orderId!)}
@@ -241,19 +247,21 @@ export function ChallansPage() {
                           <ShieldCheck size={14} />
                           {deliveringOrderId === ch.orderId ? 'Registering Delivery...' : 'Mark Order Delivered & Activate Warranties'}
                         </button>
-                      )
+                      ) : null
                     )}
 
                     {/* Delete / Void Challan Action */}
-                    <button
-                      disabled={deletingId === ch.id}
-                      onClick={() => handleDeleteChallan(ch)}
-                      className="inline-flex items-center gap-1 rounded-xl border border-[#fae0d9] bg-red-50 px-3 py-1.5 text-xs font-bold text-[#a63e3e] hover:bg-red-100 transition disabled:opacity-50"
-                      title="Delete / Void Challan & Restore Stock"
-                    >
-                      <Trash2 size={14} />
-                      {deletingId === ch.id ? 'Deleting...' : 'Delete'}
-                    </button>
+                    {['ADMIN', 'WAREHOUSE'].includes(role) && (
+                      <button
+                        disabled={deletingId === ch.id}
+                        onClick={() => handleDeleteChallan(ch)}
+                        className="inline-flex items-center gap-1 rounded-xl border border-[#fae0d9] bg-red-50 px-3 py-1.5 text-xs font-bold text-[#a63e3e] hover:bg-red-100 transition disabled:opacity-50"
+                        title="Delete / Void Challan & Restore Stock"
+                      >
+                        <Trash2 size={14} />
+                        {deletingId === ch.id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    )}
                   </div>
                 </div>
 
