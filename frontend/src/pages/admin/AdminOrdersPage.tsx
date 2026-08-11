@@ -16,15 +16,23 @@ export function AdminOrdersPage() {
 
   async function loadOrders() {
     setLoading(true);
-    const res = await fetchApi<any>('/orders');
-    if (res.success) {
-      const rawRes = res as any;
-      const orderList = Array.isArray(res.data)
-        ? res.data
-        : rawRes.orders || (res.data && (res.data as any).orders) || [];
-      setOrders(orderList);
+    try {
+      const res = await fetchApi<any>('/orders');
+      if (res.success) {
+        const rawRes = res as any;
+        const orderList = Array.isArray(res.data)
+          ? res.data
+          : rawRes.orders || (res.data && (res.data as any).orders) || [];
+        setOrders(orderList);
+      } else {
+        setOrders([]);
+      }
+    } catch (err) {
+      console.error('Error loading orders:', err);
+      setOrders([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   const handleMarkDelivered = async (orderId: string) => {
